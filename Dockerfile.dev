@@ -1,0 +1,18 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+ENV NODE_ENV=development
+ENV NEXTAUTH_URL=http://localhost:3000
+ENV NEXTAUTH_SECRET=dev-secret-key
+
+# Install dependencies
+COPY package.json package-lock.json ./
+RUN npm ci
+
+# Copy the rest of the application
+COPY . .
+
+EXPOSE 3000
+
+CMD ["npm", "run", "dev"] 

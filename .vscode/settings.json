@@ -1,0 +1,8 @@
+{
+    "typescript.tsserver.maxTsServerMemory": 4096,
+    "editor.formatOnSave": true,
+    "files.exclude": {
+        "**/.next": true,
+        "**/node_modules": true
+    },
+}

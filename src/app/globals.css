@@ -1,0 +1,123 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-kai-background text-kai-text-primary;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply text-kai-text-primary;
+  }
+
+  a {
+    @apply text-kai-primary hover:text-kai-secondary transition-colors;
+  }
+
+  button {
+    @apply cursor-pointer;
+  }
+
+  /* input,
+  select,
+  textarea {
+    @apply bg-pure-white border-kai-border focus:border-kai-primary focus:ring-2 focus:ring-kai-primary/20;
+  } */
+
+  /* Custom Scrollbar - Global */
+  ::-webkit-scrollbar {
+    @apply w-2;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-gray-100 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-kai-primary/30 rounded-full hover:bg-kai-primary/50 transition-colors cursor-pointer;
+  }
+
+  /* Workflow Panel Scrollbar */
+  .workflow-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: theme('colors.kai.primary.DEFAULT / 30%') theme('colors.gray.100');
+  }
+
+  .workflow-scroll::-webkit-scrollbar {
+    @apply w-2;
+  }
+
+  .workflow-scroll::-webkit-scrollbar-track {
+    @apply bg-gray-100 rounded-full;
+  }
+
+  .workflow-scroll::-webkit-scrollbar-thumb {
+    @apply bg-kai-primary/30 rounded-full hover:bg-kai-primary/50 transition-colors cursor-pointer;
+  }
+
+  /* Horizontal Workflow Scrollbar */
+  .workflow-scroll-x {
+    scrollbar-width: thin;
+    scrollbar-color: theme('colors.kai.primary.DEFAULT / 30%') theme('colors.gray.100');
+  }
+
+  .workflow-scroll-x::-webkit-scrollbar {
+    @apply h-2;
+  }
+
+  .workflow-scroll-x::-webkit-scrollbar-track {
+    @apply bg-gray-100 rounded-full;
+  }
+
+  .workflow-scroll-x::-webkit-scrollbar-thumb {
+    @apply bg-kai-primary/30 rounded-full hover:bg-kai-primary/50 transition-colors cursor-pointer;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-kai-primary text-pure-white hover:bg-kai-primary/90 px-4 py-2 rounded-lg transition-colors;
+  }
+
+  .btn-secondary {
+    @apply bg-kai-secondary text-pure-white hover:bg-kai-secondary/90 px-4 py-2 rounded-lg transition-colors;
+  }
+
+  .card {
+    @apply bg-pure-white border border-kai-border rounded-lg shadow-sm hover:shadow-md transition-shadow;
+  }
+
+  .input-field {
+    @apply w-full px-3 py-2 bg-pure-white border border-kai-border rounded-md focus:ring-2 focus:ring-kai-primary/20 focus:border-kai-primary transition-colors;
+  }
+
+  .sidebar-link {
+    @apply flex items-center px-4 py-2 text-gray-500 hover:bg-kai-hover rounded-lg transition-colors;
+  }
+
+  .sidebar-link .MuiListItemIcon-root {
+    @apply text-orange-500;
+  }
+
+  .dark-mode .sidebar-link {
+    @apply text-gray-300 hover:bg-gray-700;
+  }
+
+  .light-mode .sidebar-link {
+    @apply text-gray-700 hover:bg-gray-200;
+  }
+
+  .table-header {
+    @apply bg-kai-surface text-kai-text-primary font-bold px-4 py-2;
+  }
+
+  .table-cell {
+    @apply px-4 py-2 border-b border-kai-border;
+  }
+}
