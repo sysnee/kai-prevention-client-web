@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import api from '@/lib/api'
+import CollapsibleItem from '../components/CollapsibleItem'
 
 // Import system icons
 import sistemaNervosoIcon from '../assets/icons/sistema-nervoso-icon.svg'
@@ -48,77 +49,6 @@ interface Finding {
     title: string
     description: string
     type: 'informativa' | 'menor' | 'maior'
-}
-
-// Custom CollapsibleItem component
-interface CollapsibleItemProps {
-    title: string
-    subtitle?: {
-        text: string
-        color: string
-    } | null
-    isOpen: boolean
-    onToggle: () => void
-    children?: React.ReactNode
-    level?: number
-    icon?: any
-    customStyle?: string
-}
-
-const CollapsibleItem = ({
-    title,
-    subtitle = null,
-    isOpen,
-    onToggle,
-    children,
-    level = 0,
-    icon = null,
-    customStyle = ""
-}: CollapsibleItemProps) => {
-    return (
-        <div className="mb-1">
-            <div
-                onClick={onToggle}
-                className={`flex items-center justify-between cursor-pointer py-2 hover:bg-gray-50 rounded-md ${customStyle}`}
-            >
-                <div className="flex items-center gap-3">
-                    {icon && (
-                        <div className="flex-shrink-0">
-                            <Image src={icon} alt="" width={36} height={36} />
-                        </div>
-                    )}
-                    <div style={{ paddingLeft: level * 16 }}>
-                        <p className="text-gray-700">{title}</p>
-                        {subtitle && <p className={subtitle.color}>{subtitle.text}</p>}
-                    </div>
-                </div>
-                <div className="pr-2">
-                    {isOpen ? (
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                    ) : (
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                    )}
-                </div>
-            </div>
-            <AnimatePresence>
-                {isOpen && (
-                    <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="overflow-hidden pl-4"
-                    >
-                        {children}
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </div>
-    )
 }
 
 const systems: Record<SystemType, SystemInfo> = {
@@ -172,33 +102,25 @@ export default function FindingsPage() {
     const [organs, setOrgans] = useState<Organ[]>([])
     const [pathologies, setPathologies] = useState<Record<string, Pathology[]>>({})
     const [findings, setFindings] = useState<Record<string, Finding[]>>({})
-    const [loading, setLoading] = useState<boolean>(false)
+    const [loadingOrgans, setLoadingOrgans] = useState<boolean>(false)
+    const [loadingPathologies, setLoadingPathologies] = useState<Record<string, boolean>>({})
 
     useEffect(() => {
+        // Clear previous organs when switching systems
+        setOrgans([])
+        setExpandedOrgans([])
+
         // Load organs for the selected system
         const fetchOrgans = async () => {
             try {
-                setLoading(true)
+                setLoadingOrgans(true)
                 const result = await api.get(`/system/organs?system=${selectedSystem}`)
                 setOrgans(result || [])
             } catch (error) {
                 console.error('Error fetching organs:', error)
-                // Mock data for now
-                if (selectedSystem === 'Sistema Nervoso') {
-                    setOrgans([
-                        { id: 1, system: 'Sistema Nervoso', key: 'cerebro', label: 'Cérebro', active: true, isSystemDefault: true },
-                        { id: 2, system: 'Sistema Nervoso', key: 'coluna', label: 'Coluna', active: true, isSystemDefault: true }
-                    ])
-                } else if (selectedSystem === 'Sistema Urinário') {
-                    setOrgans([
-                        { id: 12, system: 'Sistema Urinário', key: 'rins', label: 'Rins', active: true, isSystemDefault: true },
-                        { id: 13, system: 'Sistema Urinário', key: 'bexiga-e-ureteres', label: 'Bexiga e ureteres', active: true, isSystemDefault: true }
-                    ])
-                } else {
-                    setOrgans([])
-                }
             } finally {
-                setLoading(false)
+                // Add small delay for smoother transition
+                setLoadingOrgans(false)
             }
         }
 
@@ -207,17 +129,18 @@ export default function FindingsPage() {
 
     const handleSystemToggle = (systemKey: string) => {
         setExpandedSystems(prev => {
+            // If clicking an already open system, just close it
             if (prev.includes(systemKey)) {
                 return prev.filter(key => key !== systemKey)
-            } else {
-                return [...prev, systemKey]
             }
-        })
 
-        const system = systems[systemKey as SystemType]
-        if (system) {
-            setSelectedSystem(system.name)
-        }
+            // Open the clicked system and close others
+            const system = systems[systemKey as SystemType]
+            if (system) {
+                setSelectedSystem(system.name)
+            }
+            return [systemKey]
+        })
     }
 
     const handleOrganToggle = async (organKey: string, organLabel: string) => {
@@ -232,34 +155,13 @@ export default function FindingsPage() {
         // Fetch pathologies for this organ if not already fetched
         if (!pathologies[organKey]) {
             try {
-                setLoading(true)
+                setLoadingPathologies(prev => ({ ...prev, [organKey]: true }))
                 const result = await api.get(`/system/pathologies?system=${selectedSystem}&organ=${organLabel}`)
+
                 setPathologies(prev => ({ ...prev, [organKey]: result || [] }))
+                setLoadingPathologies(prev => ({ ...prev, [organKey]: false }))
             } catch (error) {
                 console.error('Error fetching pathologies:', error)
-                // Mock data
-                if (organLabel === 'Coluna') {
-                    setPathologies(prev => ({
-                        ...prev,
-                        [organKey]: [
-                            { id: 101, system: selectedSystem, organ: organLabel, key: 'hemangioma', label: 'Hemangioma', active: true, isSystemDefault: true },
-                            { id: 102, system: selectedSystem, organ: organLabel, key: 'espondiloartropatia-cervical', label: 'Espondiloartropatia da coluna cervical', active: true, isSystemDefault: true },
-                            { id: 103, system: selectedSystem, organ: organLabel, key: 'espondiloartropatia-lombar', label: 'Espondiloartropatia da coluna lombar', active: true, isSystemDefault: true }
-                        ]
-                    }))
-                } else if (organLabel === 'Rins') {
-                    setPathologies(prev => ({
-                        ...prev,
-                        [organKey]: [
-                            { id: 201, system: selectedSystem, organ: organLabel, key: 'cisto-simples-do-rim', label: 'Cisto simples do rim', active: true, isSystemDefault: true },
-                            { id: 202, system: selectedSystem, organ: organLabel, key: 'rim-ausente', label: 'Rim ausente', active: true, isSystemDefault: true }
-                        ]
-                    }))
-                } else {
-                    setPathologies(prev => ({ ...prev, [organKey]: [] }))
-                }
-            } finally {
-                setLoading(false)
             }
         }
     }
@@ -291,6 +193,13 @@ export default function FindingsPage() {
             ? '1 pequena descoberta'
             : `${count} pequenas descobertas`
     }
+
+    // Loading spinner component
+    const LoadingSpinner = () => (
+        <div className="flex justify-center py-4">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-amber-500"></div>
+        </div>
+    )
 
     return (
         <div className="min-h-screen flex">
@@ -328,53 +237,61 @@ export default function FindingsPage() {
                                 onToggle={() => handleSystemToggle(systemKey)}
                                 icon={system.icon}
                             >
-                                {system.name === selectedSystem && organs.map((organ) => {
-                                    const isOrganOpen = expandedOrgans.includes(organ.key)
+                                {loadingOrgans ? (
+                                    <LoadingSpinner />
+                                ) : (
+                                    system.name === selectedSystem && organs.map((organ) => {
+                                        const isOrganOpen = expandedOrgans.includes(organ.key)
 
-                                    return (
-                                        <CollapsibleItem
-                                            key={organ.key}
-                                            title={organ.label}
-                                            isOpen={isOrganOpen}
-                                            onToggle={() => handleOrganToggle(organ.key, organ.label)}
-                                            level={1}
-                                        >
-                                            {pathologies[organ.key]?.map((pathology) => {
-                                                const isPathologyOpen = expandedPathologies.includes(pathology.key)
-                                                const findingCount = findings[pathology.key]?.length || 0
+                                        return (
+                                            <CollapsibleItem
+                                                key={organ.key}
+                                                title={organ.label}
+                                                isOpen={isOrganOpen}
+                                                onToggle={() => handleOrganToggle(organ.key, organ.label)}
+                                                level={1}
+                                            >
+                                                {loadingPathologies[organ.key] ? (
+                                                    <LoadingSpinner />
+                                                ) : (
+                                                    pathologies[organ.key]?.map((pathology) => {
+                                                        const isPathologyOpen = expandedPathologies.includes(pathology.key)
+                                                        const findingCount = findings[pathology.key]?.length || 0
 
-                                                return (
-                                                    <CollapsibleItem
-                                                        key={pathology.key}
-                                                        title={pathology.label}
-                                                        subtitle={
-                                                            findingCount > 0
-                                                                ? {
-                                                                    text: `( ${findingCount} ${findingCount === 1 ? 'achado menor' : 'achados menores'} )`,
-                                                                    color: 'text-xs text-amber-500'
+                                                        return (
+                                                            <CollapsibleItem
+                                                                key={pathology.key}
+                                                                title={pathology.label}
+                                                                subtitle={
+                                                                    findingCount > 0
+                                                                        ? {
+                                                                            text: `( ${findingCount} ${findingCount === 1 ? 'achado menor' : 'achados menores'} )`,
+                                                                            color: 'text-xs text-amber-500'
+                                                                        }
+                                                                        : null
                                                                 }
-                                                                : null
-                                                        }
-                                                        isOpen={isPathologyOpen}
-                                                        onToggle={() => handlePathologyToggle(pathology.key)}
-                                                        level={2}
-                                                    >
-                                                        {findings[pathology.key]?.map((finding) => (
-                                                            <div
-                                                                key={`finding-${finding.id}`}
-                                                                className="py-2 pl-4"
+                                                                isOpen={isPathologyOpen}
+                                                                onToggle={() => handlePathologyToggle(pathology.key)}
+                                                                level={2}
                                                             >
-                                                                <p className={`text-sm ${finding.type === 'informativa' ? 'text-blue-500' : 'text-amber-500'}`}>
-                                                                    {finding.title}
-                                                                </p>
-                                                            </div>
-                                                        ))}
-                                                    </CollapsibleItem>
-                                                )
-                                            })}
-                                        </CollapsibleItem>
-                                    )
-                                })}
+                                                                {findings[pathology.key]?.map((finding) => (
+                                                                    <div
+                                                                        key={`finding-${finding.id}`}
+                                                                        className="py-2 pl-4"
+                                                                    >
+                                                                        <p className={`text-sm ${finding.type === 'informativa' ? 'text-blue-500' : 'text-amber-500'}`}>
+                                                                            {finding.title}
+                                                                        </p>
+                                                                    </div>
+                                                                ))}
+                                                            </CollapsibleItem>
+                                                        )
+                                                    })
+                                                )}
+                                            </CollapsibleItem>
+                                        )
+                                    })
+                                )}
                             </CollapsibleItem>
                         )
                     })}
