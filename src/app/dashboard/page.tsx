@@ -60,7 +60,6 @@ export default function DashboardPage() {
                 setStudies(response.data)
 
                 if (response.data.length > 0) {
-                    // Set initial selected month to the date of the most recent study
                     const dates = response.data.map(study => study.dateTime.split(',')[0].trim())
                     setSelectedMonth(dates[0])
                 }
