@@ -6,6 +6,7 @@ import api from '@/lib/api'
 import CollapsibleItem from '../components/CollapsibleItem'
 import FindingCard from '../components/FindingCard'
 import { debounce } from 'lodash'
+import { severityColors } from '../constants'
 
 // Import system icons
 import sistemaNervosoIcon from '../assets/icons/sistema-nervoso-icon.svg'
@@ -21,10 +22,28 @@ import sistemaMusculoesqueleticoIcon from '../assets/icons/sistema-musculoesquel
 type SystemType = 'nervoso' | 'respiratorio' | 'circulatorio' | 'endocrino' | 'urinario' | 'reprodutivo' | 'digestivo' | 'musculoesqueletico'
 type Severity = 'none' | 'low' | 'medium' | 'high' | 'severe'
 
+interface FindingSummary {
+    system: string;
+    findingsCount: number;
+    severity: string;
+}
+
+interface OrganFindingSummary {
+    organ: string;
+    findingsCount: number;
+    severity: string;
+}
+
+interface PathologyFindingSummary {
+    pathology: string;
+    findingsCount: number;
+    severity: string;
+}
+
 interface SystemInfo {
     name: string
     icon: any
-    findings: number
+    findingsCount: number
 }
 
 interface Organ {
@@ -67,46 +86,38 @@ interface Finding {
     }
 }
 
-const systems: Record<SystemType, SystemInfo> = {
+const systemsMapping: Record<SystemType, Omit<SystemInfo, 'findingsCount'>> = {
     nervoso: {
         name: 'Sistema Nervoso',
         icon: sistemaNervosoIcon,
-        findings: 4
     },
     respiratorio: {
         name: 'Sistema Respiratório',
         icon: sistemaRespiratorioIcon,
-        findings: 1
     },
     circulatorio: {
         name: 'Sistema Circulatório',
         icon: sistemaCirculatorioIcon,
-        findings: 1
     },
     endocrino: {
         name: 'Sistema Endócrino',
         icon: sistemaEndocrinoIcon,
-        findings: 0
     },
     urinario: {
         name: 'Sistema Urinário',
         icon: sistemaUrinarioIcon,
-        findings: 1
     },
     reprodutivo: {
         name: 'Sistema Reprodutivo',
         icon: sistemaReprodutivoIcon,
-        findings: 1
     },
     digestivo: {
         name: 'Sistema Digestivo',
         icon: sistemaDigestivoIcon,
-        findings: 0
     },
     musculoesqueletico: {
         name: 'Sistema Musculoesquelético',
         icon: sistemaMusculoesqueleticoIcon,
-        findings: 0
     }
 }
 
@@ -138,6 +149,11 @@ export default function FindingsPage() {
     const [loadingOrgans, setLoadingOrgans] = useState<boolean>(false)
     const [loadingPathologies, setLoadingPathologies] = useState<Record<string, boolean>>({})
     const [loadingFindings, setLoadingFindings] = useState<boolean>(false)
+    const [systems, setSystems] = useState<Record<SystemType, SystemInfo>>({} as Record<SystemType, SystemInfo>)
+    const [systemSummaryData, setSystemSummaryData] = useState<Record<string, FindingSummary>>({})
+    const [loadingSystems, setLoadingSystems] = useState<boolean>(true)
+    const [organFindings, setOrganFindings] = useState<Record<string, OrganFindingSummary[]>>({})
+    const [pathologyFindings, setPathologyFindings] = useState<Record<string, PathologyFindingSummary[]>>({})
 
     // Debounced URL update function to prevent multiple rapid updates
     const updateUrl = useCallback(
@@ -162,11 +178,58 @@ export default function FindingsPage() {
         [pathname, router, reportId]
     )
 
+    // Fetch all systems findings summary
+    useEffect(() => {
+        const fetchFindingsSummary = async () => {
+            if (!reportId) return
+
+            try {
+                setLoadingSystems(true)
+                const response = await api.get(`/findings/summary?reportId=${reportId}`) as FindingSummary[]
+
+                // Initialize systems with data from mapping and 0 findings
+                const initialSystems: Record<SystemType, SystemInfo> = {} as Record<SystemType, SystemInfo>;
+                const summaryData: Record<string, FindingSummary> = {};
+
+                Object.entries(systemsMapping).forEach(([key, info]) => {
+                    initialSystems[key as SystemType] = {
+                        ...info,
+                        findingsCount: 0
+                    };
+                });
+
+                // Update findings count from API response
+                response.forEach(finding => {
+                    // Find the system key that matches the system name
+                    const systemKey = Object.keys(initialSystems).find(
+                        key => initialSystems[key as SystemType].name === finding.system
+                    );
+
+                    if (systemKey) {
+                        initialSystems[systemKey].findingsCount = finding.findingsCount;
+                        summaryData[systemKey] = finding;
+                    }
+                });
+
+                setSystems(initialSystems);
+                setSystemSummaryData(summaryData);
+            } catch (error) {
+                console.error('Error fetching findings summary:', error)
+            } finally {
+                setLoadingSystems(false)
+            }
+        }
+
+        if (reportId) {
+            fetchFindingsSummary()
+        }
+    }, [reportId])
+
     // Initialize state based on URL params
     useEffect(() => {
         if (systemParam) {
-            const systemKey = Object.keys(systems).find(key =>
-                systems[key as SystemType].name === systemParam
+            const systemKey = Object.keys(systemsMapping).find(key =>
+                systemsMapping[key as SystemType].name === systemParam
             )
             if (systemKey) {
                 setExpandedSystems([systemKey])
@@ -200,7 +263,7 @@ export default function FindingsPage() {
         }
 
         fetchFindings()
-    }, [reportId, systemParam, organParam, pathologyParam])
+    }, [reportId, systemParam, organParam])
 
     // Load organs when system changes
     useEffect(() => {
@@ -213,6 +276,17 @@ export default function FindingsPage() {
 
                 const result = await api.get(`/system/organs?system=${selectedSystem}`)
                 setOrgans(result || [])
+
+                // Fetch organ findings summary
+                try {
+                    const organSummary = await api.get(`/findings/summary?reportId=${reportId}&system=${selectedSystem}`) as OrganFindingSummary[]
+                    setOrganFindings(prev => ({
+                        ...prev,
+                        [selectedSystem]: organSummary || []
+                    }))
+                } catch (err) {
+                    console.error('Error fetching organ findings summary:', err)
+                }
 
                 // If organ param is present, expand it
                 if (organParam) {
@@ -229,7 +303,7 @@ export default function FindingsPage() {
         }
 
         fetchOrgans()
-    }, [selectedSystem, organParam])
+    }, [selectedSystem, reportId])
 
     const handleSystemToggle = (systemKey: string) => {
         setExpandedSystems(prev => {
@@ -278,6 +352,17 @@ export default function FindingsPage() {
                 const result = await api.get(`/system/pathologies?system=${selectedSystem}&organ=${organLabel}`)
                 setPathologies(prev => ({ ...prev, [organKey]: result || [] }))
 
+                // Fetch pathology findings summary
+                try {
+                    const pathologySummary = await api.get(`/findings/summary?reportId=${reportId}&system=${selectedSystem}&organ=${organLabel}`) as PathologyFindingSummary[]
+                    setPathologyFindings(prev => ({
+                        ...prev,
+                        [`${selectedSystem}-${organLabel}`]: pathologySummary || []
+                    }))
+                } catch (err) {
+                    console.error('Error fetching pathology findings summary:', err)
+                }
+
                 // If pathology param is present, expand it
                 if (pathologyParam) {
                     const pathologyKey = result?.find((p: Pathology) => p.label === pathologyParam)?.key
@@ -317,6 +402,44 @@ export default function FindingsPage() {
             : `${count} pequenas descobertas`
     }
 
+    // Helper function to get organ findings count
+    const getOrganFindingsCount = (organLabel: string): number => {
+        if (!selectedSystem || !organFindings[selectedSystem]) return 0
+
+        const organSummary = organFindings[selectedSystem].find(
+            summary => summary.organ === organLabel
+        )
+
+        return organSummary?.findingsCount || 0
+    }
+
+    // Helper function to get pathology findings count
+    const getPathologyFindingsCount = (organLabel: string, pathologyLabel: string): number => {
+        if (!selectedSystem || !pathologyFindings[`${selectedSystem}-${organLabel}`]) return 0
+
+        const pathologySummary = pathologyFindings[`${selectedSystem}-${organLabel}`].find(
+            summary => summary.pathology === pathologyLabel
+        )
+
+        return pathologySummary?.findingsCount || 0
+    }
+
+    // Helper function to get the proper color based on severity
+    const getSeverityColor = (severity: string = 'none'): string => {
+        return severity in severityColors
+            ? `text-xs`
+            : `text-xs text-green-500`;
+    }
+
+    const getSeverityTextColor = (severity: string = 'none'): string => {
+        if (severity === 'none') return 'text-blue-500';
+        if (severity === 'low') return 'text-yellow-500';
+        if (severity === 'medium') return 'text-amber-500';
+        if (severity === 'high') return 'text-red-500';
+        if (severity === 'severe') return 'text-black';
+        return 'text-green-500';
+    }
+
     return (
         <div className="min-h-screen flex max-w-[1840px] mx-auto">
             {/* Sidebar */}
@@ -327,7 +450,7 @@ export default function FindingsPage() {
                         className="w-full border border-gray-300 rounded-md py-2 px-3 appearance-none bg-gradient-to-r from-green-200 via-amber-200 to-green-200 bg-[length:100%_1px] bg-bottom bg-no-repeat"
                         defaultValue="14 de maio de 2024 (Verificação mais recente)"
                     >
-                        <option>14 de maio de 2024 (Verificação mais recente)</option>
+                        <option>22 de abril de 2025 (Verificação mais recente)</option>
                     </select>
                     <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -337,81 +460,101 @@ export default function FindingsPage() {
                 </div>
 
                 <div className="space-y-1">
-                    {Object.keys(systems).map((systemKey) => {
-                        const system = systems[systemKey as SystemType]
-                        const isSystemOpen = expandedSystems.includes(systemKey)
+                    {loadingSystems ? (
+                        <LoadingSpinner />
+                    ) : (
+                        Object.keys(systems).map((systemKey) => {
+                            const system = systems[systemKey as SystemType]
+                            const isSystemOpen = expandedSystems.includes(systemKey)
 
-                        return (
-                            <CollapsibleItem
-                                key={systemKey}
-                                title={system.name}
-                                subtitle={{
-                                    text: getFindingsText(system.findings),
-                                    color: system.findings > 0 ? 'text-xs text-amber-500' : 'text-xs text-green-500'
-                                }}
-                                isOpen={isSystemOpen}
-                                onToggle={() => handleSystemToggle(systemKey)}
-                                icon={system.icon}
-                            >
-                                {loadingOrgans ? (
-                                    <LoadingSpinner />
-                                ) : (
-                                    system.name === selectedSystem && organs.map((organ) => {
-                                        const isOrganOpen = expandedOrgans.includes(organ.key)
+                            return (
+                                <CollapsibleItem
+                                    key={systemKey}
+                                    title={system.name}
+                                    subtitle={{
+                                        text: getFindingsText(system.findingsCount),
+                                        color: system.findingsCount > 0
+                                            ? getSeverityTextColor(systemSummaryData[systemKey]?.severity || 'none')
+                                            : 'text-xs text-green-500'
+                                    }}
+                                    isOpen={isSystemOpen}
+                                    onToggle={() => handleSystemToggle(systemKey)}
+                                    icon={system.icon}
+                                >
+                                    {loadingOrgans ? (
+                                        <LoadingSpinner />
+                                    ) : (
+                                        system.name === selectedSystem && organs.map((organ) => {
+                                            const isOrganOpen = expandedOrgans.includes(organ.key)
+                                            const organFindingsCount = getOrganFindingsCount(organ.label)
 
-                                        return (
-                                            <CollapsibleItem
-                                                key={organ.key}
-                                                title={organ.label}
-                                                isOpen={isOrganOpen}
-                                                onToggle={() => handleOrganToggle(organ.key, organ.label)}
-                                                level={1}
-                                            >
-                                                {loadingPathologies[organ.key] ? (
-                                                    <LoadingSpinner />
-                                                ) : (
-                                                    pathologies[organ.key]?.map((pathology) => {
-                                                        const isPathologyOpen = expandedPathologies.includes(pathology.key)
-                                                        const findingCount = findings[pathology.key]?.length || 0
+                                            return (
+                                                <CollapsibleItem
+                                                    key={organ.key}
+                                                    title={organ.label}
+                                                    subtitle={
+                                                        organFindingsCount > 0
+                                                            ? {
+                                                                text: getFindingsText(organFindingsCount),
+                                                                color: getSeverityTextColor(organFindings[selectedSystem]?.find(o => o.organ === organ.label)?.severity || 'none')
+                                                            }
+                                                            : {
+                                                                text: 'Nenhum resultado adverso',
+                                                                color: 'text-xs text-green-500'
+                                                            }
+                                                    }
+                                                    isOpen={isOrganOpen}
+                                                    onToggle={() => handleOrganToggle(organ.key, organ.label)}
+                                                    level={1}
+                                                >
+                                                    {loadingPathologies[organ.key] ? (
+                                                        <LoadingSpinner />
+                                                    ) : (
+                                                        pathologies[organ.key]?.map((pathology) => {
+                                                            const isPathologyOpen = expandedPathologies.includes(pathology.key)
+                                                            const pathologyFindingsCount = getPathologyFindingsCount(organ.label, pathology.label)
 
-                                                        return (
-                                                            <CollapsibleItem
-                                                                key={pathology.key}
-                                                                title={pathology.label}
-                                                                subtitle={
-                                                                    findingCount > 0
-                                                                        ? {
-                                                                            text: `( ${findingCount} ${findingCount === 1 ? 'achado menor' : 'achados menores'} )`,
-                                                                            color: 'text-xs text-amber-500'
-                                                                        }
-                                                                        : null
-                                                                }
-                                                                isOpen={isPathologyOpen}
-                                                                onToggle={() => handlePathologyToggle(pathology.key, pathology.label, organ.label)}
-                                                                level={2}
-                                                            >
-                                                                {findings[pathology.key]?.map((finding) => (
-                                                                    <div
-                                                                        key={`finding-${finding.id}`}
-                                                                        className="py-2 pl-4"
-                                                                    >
-                                                                        <p className={`text-sm ${finding.severity === 'none' ? 'text-blue-500' : 'text-amber-500'
-                                                                            }`}>
-                                                                            {finding.pathology}
-                                                                        </p>
-                                                                    </div>
-                                                                ))}
-                                                            </CollapsibleItem>
-                                                        )
-                                                    })
-                                                )}
-                                            </CollapsibleItem>
-                                        )
-                                    })
-                                )}
-                            </CollapsibleItem>
-                        )
-                    })}
+                                                            return (
+                                                                <CollapsibleItem
+                                                                    key={pathology.key}
+                                                                    title={pathology.label}
+                                                                    subtitle={
+                                                                        pathologyFindingsCount > 0
+                                                                            ? {
+                                                                                text: `${pathologyFindingsCount} ${pathologyFindingsCount === 1 ? 'achado menor' : 'achados menores'}`,
+                                                                                color: getSeverityTextColor(pathologyFindings[`${selectedSystem}-${organ.label}`]?.find(p => p.pathology === pathology.label)?.severity || 'none')
+                                                                            }
+                                                                            : {
+                                                                                text: 'Nenhum resultado adverso',
+                                                                                color: 'text-xs text-green-500'
+                                                                            }
+                                                                    }
+                                                                    isOpen={isPathologyOpen}
+                                                                    onToggle={() => handlePathologyToggle(pathology.key, pathology.label, organ.label)}
+                                                                    level={2}
+                                                                >
+                                                                    {findings[pathology.key]?.map((finding) => (
+                                                                        <div
+                                                                            key={`finding-${finding.id}`}
+                                                                            className="py-2 pl-4"
+                                                                        >
+                                                                            <p className={`text-sm ${getSeverityTextColor(finding.severity)}`}>
+                                                                                {finding.pathology}
+                                                                            </p>
+                                                                        </div>
+                                                                    ))}
+                                                                </CollapsibleItem>
+                                                            )
+                                                        })
+                                                    )}
+                                                </CollapsibleItem>
+                                            )
+                                        })
+                                    )}
+                                </CollapsibleItem>
+                            )
+                        })
+                    )}
                 </div>
             </div>
 

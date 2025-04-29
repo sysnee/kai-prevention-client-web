@@ -1,8 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-
-type Severity = 'none' | 'low' | 'medium' | 'high' | 'severe'
+import { getSeverityText, severityColors } from '../constants'
+import { Severity } from '../constants'
+import { formatDateTime } from '../utils/formatters'
 
 interface Finding {
     id: string
@@ -32,35 +33,10 @@ interface FindingCardProps {
 export default function FindingCard({ finding }: FindingCardProps) {
     const [expanded, setExpanded] = useState(false)
 
-    const severityColors = {
-        'none': 'rgba(21, 122, 237, 1)',
-        'low': 'rgba(253, 224, 71, 1)',
-        'medium': 'rgba(245, 158, 11, 1)',
-        'high': 'rgba(244, 63, 94, 1)',
-        'severe': 'rgba(0, 0, 0, 1)',
-    }
-
-    const getSeverityText = (severity: Severity) => {
-        switch (severity) {
-            case 'none': return 'informativa'
-            case 'low': return 'menor'
-            case 'medium': return 'moderada'
-            case 'high': return 'maior'
-            case 'severe': return 'severa'
-            default: return 'menor'
-        }
-    }
-
-    const formattedDate = new Date(finding.created_at).toLocaleDateString('pt-BR', {
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric'
-    })
-
     return (
         <div className="relative mb-6 rounded-2xl p-[1px] overflow-hidden bg-gradient-to-r from-green-200 via-amber-200 to-amber-400">
             <div className="bg-white p-5 rounded-2xl">
-                <div className="text-sm text-gray-500">{formattedDate} / Varredura completa de corpo inteiro</div>
+                <div className="text-sm text-gray-500">{formatDateTime(finding.created_at)} / Varredura completa de corpo inteiro</div>
                 <div className="mt-2 font-medium flex items-center">
                     {/* <div
                         className="ml-2 w-3 h-3 rounded-full"

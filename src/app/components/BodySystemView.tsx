@@ -1,8 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
+import api from '@/lib/api'
+import { severityColors } from '../constants'
 import sistemaNervosoIcon from '../assets/icons/sistema-nervoso-icon.svg'
 import sistemaRespiratorioIcon from '../assets/icons/sistema-respiratorio-icon.svg'
 import sistemaCirculatorioIcon from '../assets/icons/sistema-circulatorio-icon.svg'
@@ -24,67 +26,123 @@ import scanImage from '../assets/scan-1.jpg'
 
 type SystemType = 'nervoso' | 'respiratorio' | 'circulatorio' | 'endocrino' | 'urinario' | 'reprodutivo' | 'digestivo' | 'musculoesqueletico'
 
+interface FindingSummary {
+    system: string;
+    findingsCount: number;
+    severity: string;
+}
+
 interface SystemInfo {
     name: string
     icon: any
     imagePath: any
-    findings: number
+    key: SystemType
+    findingsCount: number
+    severity: string
 }
 
-const systems: Record<SystemType, SystemInfo> = {
+const systemsMapping: Record<SystemType, Omit<SystemInfo, 'findingsCount' | 'severity'>> = {
     nervoso: {
         name: 'Sistema Nervoso',
         icon: sistemaNervosoIcon,
         imagePath: sistemaNervosoImg,
-        findings: 4
+        key: 'nervoso'
     },
     respiratorio: {
         name: 'Sistema Respiratório',
         icon: sistemaRespiratorioIcon,
         imagePath: sistemaRespiratorioImg,
-        findings: 1
+        key: 'respiratorio'
     },
     circulatorio: {
         name: 'Sistema Circulatório',
         icon: sistemaCirculatorioIcon,
         imagePath: sistemaCirculatorioImg,
-        findings: 1
+        key: 'circulatorio'
     },
     endocrino: {
         name: 'Sistema Endócrino',
         icon: sistemaEndocrinoIcon,
         imagePath: sistemaEndocrinoImg,
-        findings: 0
+        key: 'endocrino'
     },
     urinario: {
         name: 'Sistema Urinário',
         icon: sistemaUrinarioIcon,
         imagePath: sistemaUrinarioImg,
-        findings: 1
+        key: 'urinario'
     },
     reprodutivo: {
         name: 'Sistema Reprodutivo',
         icon: sistemaReprodutivoIcon,
         imagePath: sistemaReprodutivoImg,
-        findings: 1
+        key: 'reprodutivo'
     },
     digestivo: {
         name: 'Sistema Digestivo',
         icon: sistemaDigestivoIcon,
         imagePath: sistemaDigestivoImg,
-        findings: 0
+        key: 'digestivo'
     },
     musculoesqueletico: {
         name: 'Sistema Musculoesquelético',
         icon: sistemaMusculoesqueleticoIcon,
         imagePath: sistemaMusculoesqueleticoImg,
-        findings: 0
+        key: 'musculoesqueletico'
     }
 }
 
 export default function BodySystemView({ reportId }: { reportId: string }) {
     const [activeSystem, setActiveSystem] = useState<SystemType>('nervoso')
+    const [systems, setSystems] = useState<Record<SystemType, SystemInfo>>({} as Record<SystemType, SystemInfo>)
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
     const router = useRouter()
+
+    useEffect(() => {
+        const fetchFindingsSummary = async () => {
+            try {
+                setLoading(true)
+                const response = await api.get(`/findings/summary?reportId=${reportId}`) as FindingSummary[]
+
+                // Initialize systems with data from mapping and 0 findings
+                const initialSystems: Record<SystemType, SystemInfo> = {} as Record<SystemType, SystemInfo>;
+
+                Object.entries(systemsMapping).forEach(([key, info]) => {
+                    initialSystems[key as SystemType] = {
+                        ...info,
+                        findingsCount: 0,
+                        severity: 'none'
+                    };
+                });
+
+                // Update findings count from API response
+                response.forEach(finding => {
+                    // Find the system key that matches the system name
+                    const systemKey = Object.keys(initialSystems).find(
+                        key => initialSystems[key as SystemType].name === finding.system
+                    ) as SystemType | undefined;
+
+                    if (systemKey) {
+                        initialSystems[systemKey].findingsCount = finding.findingsCount;
+                        initialSystems[systemKey].severity = finding.severity;
+                    }
+                });
+
+                setSystems(initialSystems);
+                setError(null);
+            } catch (err) {
+                setError('Falha ao carregar o resumo dos achados')
+                console.error(err)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        if (reportId) {
+            fetchFindingsSummary()
+        }
+    }, [reportId])
 
     const getFindingsText = (count: number) => {
         if (count === 0) return 'Nenhum resultado adverso'
@@ -101,7 +159,29 @@ export default function BodySystemView({ reportId }: { reportId: string }) {
         router.push(`/findings?reportId=${reportId}&system=${systems[systemKey].name}`)
     }
 
+    // Helper function to get the proper color based on severity
+    const getSeverityTextColor = (severity: string = 'none'): string => {
+        if (severity === 'none') return 'text-blue-500';
+        if (severity === 'low') return 'text-yellow-500';
+        if (severity === 'medium') return 'text-amber-500';
+        if (severity === 'high') return 'text-red-500';
+        if (severity === 'severe') return 'text-black';
+        return 'text-green-500';
+    }
+
     const renderSystemButton = (systemKey: SystemType) => {
+        if (loading || !systems[systemKey]) {
+            return (
+                <div key={systemKey} className="flex items-center gap-3 mb-4">
+                    <div className="w-11 h-11 bg-gray-200 rounded-full animate-pulse"></div>
+                    <div>
+                        <div className="w-32 h-4 bg-gray-200 rounded animate-pulse mb-1"></div>
+                        <div className="w-24 h-3 bg-gray-200 rounded animate-pulse"></div>
+                    </div>
+                </div>
+            );
+        }
+
         const system = systems[systemKey];
         const isActive = activeSystem === systemKey;
 
@@ -120,13 +200,24 @@ export default function BodySystemView({ reportId }: { reportId: string }) {
                 />
                 <div>
                     <p className="text-gray-700 text-sm">{system.name}</p>
-                    <p className={`text-xs ${system.findings > 0 ? 'text-amber-500' : 'text-green-500'}`}>
-                        {getFindingsText(system.findings)}
+                    <p className={`text-xs ${system.findingsCount > 0 ? getSeverityTextColor(system.severity) : 'text-green-500'}`}>
+                        {getFindingsText(system.findingsCount)}
                     </p>
                 </div>
             </div>
         );
     };
+
+    const getActiveSystemImage = () => {
+        if (loading || !systems[activeSystem]) {
+            return null;
+        }
+        return systems[activeSystem].imagePath;
+    }
+
+    if (error) {
+        return <div className="text-red-500 p-4">{error}</div>
+    }
 
     return (
         <div className="flex flex-col md:flex-row gap-8 bg-white rounded-xl shadow-sm p-8">
@@ -145,13 +236,15 @@ export default function BodySystemView({ reportId }: { reportId: string }) {
                     </div>
 
                     <div className="relative h-[450px] w-48 mx-2">
-                        <Image
-                            src={systems[activeSystem].imagePath}
-                            alt={`Ilustração ${systems[activeSystem].name}`}
-                            fill
-                            style={{ objectFit: 'contain' }}
-                            className="transition-opacity duration-300"
-                        />
+                        {getActiveSystemImage() && (
+                            <Image
+                                src={getActiveSystemImage()}
+                                alt={`Ilustração ${loading || !systems[activeSystem] ? '' : systems[activeSystem].name}`}
+                                fill
+                                style={{ objectFit: 'contain' }}
+                                className="transition-opacity duration-300"
+                            />
+                        )}
                     </div>
 
                     <div className="flex flex-col justify-between">

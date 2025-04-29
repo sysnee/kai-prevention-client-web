@@ -1,9 +1,9 @@
 export function formatCNPJ(cnpj: string): string {
   if (!cnpj) return '';
-  
+
   // Remove caracteres não numéricos
   const digits = cnpj.replace(/\D/g, '');
-  
+
   // Aplica formatação XX.XXX.XXX/XXXX-XX
   return digits
     .replace(/^(\d{2})(\d)/, '$1.$2')
@@ -15,10 +15,10 @@ export function formatCNPJ(cnpj: string): string {
 
 export function formatPhone(phone: string): string {
   if (!phone) return '';
-  
+
   // Remove caracteres não numéricos
   const digits = phone.replace(/\D/g, '');
-  
+
   // Verifica se é um celular (11 dígitos) ou telefone fixo (10 dígitos)
   if (digits.length <= 10) {
     return digits
@@ -35,10 +35,10 @@ export function formatPhone(phone: string): string {
 
 export function formatCEP(cep: string): string {
   if (!cep) return '';
-  
+
   // Remove caracteres não numéricos
   const digits = cep.replace(/\D/g, '');
-  
+
   // Aplica formatação XXXXX-XXX
   return digits.replace(/^(\d{5})(\d{3})?$/, '$1-$2').substr(0, 9);
 }
@@ -57,7 +57,7 @@ export function processBusinessHours(businessHours: any[]) {
 
 export function formatDateTime(dateString: string): string {
   if (!dateString) return '';
-  
+
   const date = new Date(dateString);
   return date.toLocaleDateString('pt-BR', {
     day: '2-digit',
