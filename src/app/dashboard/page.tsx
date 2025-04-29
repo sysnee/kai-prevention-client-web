@@ -1,56 +1,87 @@
 'use client'
 
-import * as React from 'react';
-import type { } from '@mui/x-date-pickers/themeAugmentation';
-import type { } from '@mui/x-charts/themeAugmentation';
-import type { } from '@mui/x-data-grid/themeAugmentation';
-import type { } from '@mui/x-tree-view/themeAugmentation';
-import Image from 'next/image';
-import { signIn, signOut, useSession } from 'next-auth/react';
-import { apiCall } from '@/lib/api';
-import { NextJSIcon } from '../internals/components/CustomIcons';
+import { useState } from 'react'
+import { useSession } from 'next-auth/react'
+import Header from '../components/Header'
+import Tabs from '../components/Tabs'
+import GradientSelect from '../components/GradientSelect'
+import BodySystemView from '../components/BodySystemView'
 
-export default function Dashboard() {
-  const { data: session, status } = useSession();
+export default function DashboardPage() {
+    const { data: session } = useSession()
+    const [activeTab, setActiveTab] = useState('meus-estudos')
+    const [selectedMonth, setSelectedMonth] = useState('maio de 2026')
+    const [hasStudies, setHasStudies] = useState(true)
 
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <NextJSIcon />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li>This is a public page</li>
-          <li>
-            {JSON.stringify(session, null, 2)}
-          </li>
-          <li>{status}</li>
-        </ol>
+    const handleTabChange = (tabId: string) => {
+        setActiveTab(tabId)
+    }
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            rel="noopener noreferrer"
-            onClick={() => signIn('auth0')}
-          >
-            Sign In
-          </a>
+    const handleMonthChange = (value: string) => {
+        setSelectedMonth(value)
+    }
 
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            rel="noopener noreferrer"
-            onClick={() => signOut()}
-          >
-            Sign Out
-          </a>
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            rel="noopener noreferrer"
-            onClick={() => apiCall('/api/health', { method: 'GET' })}
-          >
-            API Test
-          </a>
+    const tabs = [
+        { id: 'meus-estudos', label: 'Meus estudos' },
+        { id: 'estudos-compartilhados', label: 'Estudos compartilhados comigo' }
+    ]
 
+    const monthOptions = [
+        { value: 'março de 2026', label: 'março de 2026' },
+        { value: 'abril de 2026', label: 'abril de 2026' },
+    ]
+
+    return (
+        <div className="min-h-screen flex flex-col">
+            {/* Main content */}
+            <main className="flex-1 p-6 max-w-7xl mx-auto w-full">
+                {/* Page title */}
+                <h1 className="text-2xl text-gray-700 font-normal mb-6">VARREDURAS</h1>
+
+                {/* Tabs */}
+                <Tabs
+                    tabs={tabs}
+                    activeTab={activeTab}
+                    onTabChange={handleTabChange}
+                    className="mb-8"
+                />
+
+                {/* Next scan info */}
+                <div className="bg-gray-50 rounded-lg p-6 mb-8">
+                    <p className="text-gray-700 mb-6">Sua próxima varredura recomendá é em maio de 2026</p>
+
+                    <GradientSelect
+                        label="Data da digitalização"
+                        options={monthOptions}
+                        value={selectedMonth}
+                        onChange={handleMonthChange}
+                        className="max-w-xs"
+                    />
+                </div>
+
+                {/* Content based on active tab */}
+                <div>
+                    {activeTab === 'meus-estudos' ? (
+                        hasStudies ? (
+                            <div className="mb-8">
+                                <div className="mb-6">
+                                    <h2 className="text-xl text-gray-700">
+                                        Augusto Romão - Varredura completa de corpo inteiro <span className="text-green-500 font-normal">/ Concluída</span>
+                                    </h2>
+                                </div>
+                                <BodySystemView />
+                            </div>
+                        ) : (
+                            <p className="text-gray-500 italic">Nenhum estudo encontrado</p>
+                        )
+                    ) : (
+                        <div>
+                            {/* Estudos compartilhados content */}
+                            <p className="text-gray-500 italic">Nenhum estudo compartilhado encontrado</p>
+                        </div>
+                    )}
+                </div>
+            </main>
         </div>
-      </main>
-    </div>
-  );
-}
+    )
+} 

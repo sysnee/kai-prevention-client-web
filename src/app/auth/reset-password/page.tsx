@@ -2,11 +2,14 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { CircularProgress, useTheme } from '@mui/material'
+import { CircularProgress } from '@mui/material'
 import { z } from 'zod'
 import Image from 'next/image'
 import { Visibility, VisibilityOff } from '@mui/icons-material'
-import logoImage from '@/app/assets/kai-pc.png'
+import kaiLogo from '../../assets/kai-pc.png'
+import loginBackground from '../../assets/login-1.jpg'
+import '../login/styles.css'
+
 const resetPasswordSchema = z.object({
     password: z.string()
         .min(8, 'Password must be at least 8 characters')
@@ -21,7 +24,6 @@ const resetPasswordSchema = z.object({
 
 function ResetPasswordForm() {
     const router = useRouter()
-    const theme = useTheme()
     const searchParams = useSearchParams()
     const token = searchParams.get('token')
 
@@ -99,159 +101,171 @@ function ResetPasswordForm() {
 
     if (tokenError) {
         return (
-            <div className="flex items-center justify-center min-h-screen bg-black">
-                <div className="w-full max-w-md py-12 px-8 bg-white rounded-md">
-                    <div className="flex justify-center mb-6">
-                        <Image
-                            src={logoImage}
-                            alt="KAI Prevention Center"
-                            width={90}
-                            height={60}
-                        />
-                    </div>
+            <div className="flex h-screen login-page">
+                {/* Left side - Background image */}
+                <div className="hidden md:block md:w-1/2 relative">
+                    <Image
+                        src={loginBackground}
+                        alt="KAI Prevention Center"
+                        fill
+                        style={{ objectFit: 'cover', objectPosition: 'center' }}
+                        priority
+                    />
+                </div>
 
-                    <div className="mb-6 text-red-600">
-                        <svg className="w-16 h-16 mx-auto mb-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd"></path>
-                        </svg>
-                        <h2 className="text-xl font-medium mb-2">Link inválido</h2>
-                        <p className="text-gray-600">O link de redefinição de senha é inválido ou expirou.</p>
-                    </div>
+                {/* Right side - Form */}
+                <div className="w-full md:w-1/2 flex items-center justify-center bg-white">
+                    <div className="w-full max-w-md px-8 py-12">
+                        <div className="flex justify-center mb-8">
+                            <Image
+                                src={kaiLogo}
+                                alt="KAI Prevention Center"
+                                width={120}
+                                height={80}
+                                priority
+                            />
+                        </div>
 
-                    <button
-                        onClick={navigateToLogin}
-                        className="w-full py-2 px-4 bg-orange-400 text-white rounded-md hover:bg-orange-500 transition-colors"
-                    >
-                        Voltar para o login
-                    </button>
+                        <div className="mb-8 text-center">
+                            <div className="flex justify-center mb-4 text-red-500">
+                                <svg className="w-16 h-16" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd"></path>
+                                </svg>
+                            </div>
+                            <h2 className="text-xl font-medium mb-2">Invalid Link</h2>
+                            <p className="text-gray-600">The password reset link is invalid or has expired.</p>
+                        </div>
+
+                        <button
+                            onClick={navigateToLogin}
+                            className="kai-gradient-button w-full py-3"
+                        >
+                            Back to Login
+                        </button>
+                    </div>
                 </div>
             </div>
         )
     }
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-black">
-            <div className="w-full max-w-md py-12 px-8 bg-white rounded-md">
-                <div className="flex justify-center mb-6">
-                    <Image
-                        src={logoImage}
-                        alt="KAI Prevention Center"
-                        width={90}
-                        height={60}
-                    />
-                </div>
+        <div className="flex h-screen login-page">
+            {/* Left side - Background image */}
+            <div className="hidden md:block md:w-1/2 relative">
+                <Image
+                    src={loginBackground}
+                    alt="KAI Prevention Center"
+                    fill
+                    style={{ objectFit: 'cover', objectPosition: 'center' }}
+                    priority
+                />
+            </div>
 
-                {isSuccess ? (
-                    <div className="text-center">
-                        <div className="text-green-600 mb-4">
-                            <svg className="w-16 h-16 mx-auto mb-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path>
-                            </svg>
-                            <h2 className="text-xl font-medium mb-2">Senha redefinida com sucesso</h2>
-                            <p className="text-gray-600 mb-6">Sua senha foi atualizada com sucesso.</p>
-                        </div>
-
-                        <button
-                            onClick={navigateToLogin}
-                            className="w-full py-2 px-4 bg-orange-400 text-white rounded-md hover:bg-orange-500 transition-colors"
-                        >
-                            Entrar com a nova senha
-                        </button>
+            {/* Right side - Form */}
+            <div className="w-full md:w-1/2 flex items-center justify-center bg-white">
+                <div className="w-full max-w-md px-8 py-12">
+                    <div className="flex justify-center mb-8">
+                        <Image
+                            src={kaiLogo}
+                            alt="KAI Prevention Center"
+                            width={120}
+                            height={80}
+                            priority
+                        />
                     </div>
-                ) : (
-                    <>
-                        <h1 className="text-2xl font-normal text-center mb-1">Criar nova senha</h1>
-                        <p className="text-center text-gray-600 mb-6">
-                            Sua nova senha deve ser diferente das senhas anteriores
-                        </p>
 
-                        {requestError && (
-                            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-md">
-                                {requestError}
+                    {isSuccess ? (
+                        <div className="text-center">
+                            <div className="flex justify-center mb-4 text-green-500">
+                                <svg className="w-16 h-16" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path>
+                                </svg>
                             </div>
-                        )}
-
-                        <form onSubmit={handleSubmit}>
-                            <div className="mb-4">
-                                <label className="block text-sm mb-1">
-                                    Nova senha*
-                                </label>
-                                <div className="relative">
-                                    <input
-                                        type={showPassword ? "text" : "password"}
-                                        name="password"
-                                        value={formData.password}
-                                        onChange={handleChange}
-                                        required
-                                        disabled={isLoading}
-                                        className="w-full px-3 py-2 rounded-md focus:ring-2 focus:ring-kai-primary focus:border-transparent"
-                                        style={{
-                                            border: errors.password
-                                                ? "1px solid #dc2626"
-                                                : theme.palette.mode === 'light'
-                                                    ? "1px solid rgba(229,231,235,255)"
-                                                    : "1px solid hsla(220, 20%, 25%, 0.6)",
-                                            outline: 'none'
-                                        }}
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute inset-y-0 right-0 px-3 flex items-center"
-                                    >
-                                        {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
-                                    </button>
-                                </div>
-                                {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
-                            </div>
-
-                            <div className="mb-6">
-                                <label className="block text-sm mb-1">
-                                    Confirmar nova senha*
-                                </label>
-                                <div className="relative">
-                                    <input
-                                        type={showConfirmPassword ? "text" : "password"}
-                                        name="confirmPassword"
-                                        value={formData.confirmPassword}
-                                        onChange={handleChange}
-                                        required
-                                        disabled={isLoading}
-                                        className="w-full px-3 py-2 rounded-md focus:ring-2 focus:ring-kai-primary focus:border-transparent"
-                                        style={{
-                                            border: errors.confirmPassword
-                                                ? "1px solid #dc2626"
-                                                : theme.palette.mode === 'light'
-                                                    ? "1px solid rgba(229,231,235,255)"
-                                                    : "1px solid hsla(220, 20%, 25%, 0.6)",
-                                            outline: 'none'
-                                        }}
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                        className="absolute inset-y-0 right-0 px-3 flex items-center"
-                                    >
-                                        {showConfirmPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
-                                    </button>
-                                </div>
-                                {errors.confirmPassword && <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>}
-                            </div>
+                            <h2 className="text-xl font-medium mb-2">Password Reset Successful</h2>
+                            <p className="text-gray-600 mb-6">Your password has been successfully updated.</p>
 
                             <button
-                                type="submit"
-                                disabled={isLoading}
-                                className="w-full py-2 px-4 bg-orange-400 text-white rounded-md hover:bg-orange-500 transition-colors"
+                                onClick={navigateToLogin}
+                                className="kai-gradient-button w-full py-3"
                             >
-                                {isLoading ? (
-                                    <CircularProgress size={24} color="inherit" />
-                                ) : (
-                                    'Redefinir senha'
-                                )}
+                                Login with new password
                             </button>
-                        </form>
-                    </>
-                )}
+                        </div>
+                    ) : (
+                        <>
+                            <h1 className="text-2xl text-center text-gray-700 mb-6">CREATE NEW PASSWORD</h1>
+                            <p className="text-center text-gray-600 mb-8">
+                                Your new password must be different from previous passwords
+                            </p>
+
+                            {requestError && (
+                                <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-md">
+                                    {requestError}
+                                </div>
+                            )}
+
+                            <form onSubmit={handleSubmit}>
+                                <div className="mb-6">
+                                    <div className="relative">
+                                        <input
+                                            type={showPassword ? "text" : "password"}
+                                            name="password"
+                                            placeholder="New password"
+                                            value={formData.password}
+                                            onChange={handleChange}
+                                            required
+                                            disabled={isLoading}
+                                            className="kai-gradient-input"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="password-visibility-button"
+                                        >
+                                            {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                                        </button>
+                                    </div>
+                                    {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
+                                </div>
+
+                                <div className="mb-8">
+                                    <div className="relative">
+                                        <input
+                                            type={showConfirmPassword ? "text" : "password"}
+                                            name="confirmPassword"
+                                            placeholder="Confirm new password"
+                                            value={formData.confirmPassword}
+                                            onChange={handleChange}
+                                            required
+                                            disabled={isLoading}
+                                            className="kai-gradient-input"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                            className="password-visibility-button"
+                                        >
+                                            {showConfirmPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                                        </button>
+                                    </div>
+                                    {errors.confirmPassword && <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>}
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    disabled={isLoading}
+                                    className="kai-gradient-button w-full py-3"
+                                >
+                                    {isLoading ? (
+                                        <CircularProgress size={24} color="inherit" />
+                                    ) : (
+                                        'Reset Password'
+                                    )}
+                                </button>
+                            </form>
+                        </>
+                    )}
+                </div>
             </div>
         </div>
     )
@@ -259,10 +273,8 @@ function ResetPasswordForm() {
 
 function LoadingFallback() {
     return (
-        <div className="flex items-center justify-center min-h-screen bg-black">
-            <div className="w-full max-w-md py-12 px-8 bg-white rounded-md flex justify-center">
-                <CircularProgress size={48} />
-            </div>
+        <div className="flex items-center justify-center min-h-screen">
+            <CircularProgress />
         </div>
     )
 }

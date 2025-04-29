@@ -29,7 +29,7 @@ The login page has been implemented according to the design mockup. The page fea
 - The login page is responsive and will adjust to different screen sizes
 - The form includes validation for email and password
 - Password visibility can be toggled
-- The page is set up to redirect to the dashboard after successful login
+- The page is set up to redirect to the home page after successful login
 
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 

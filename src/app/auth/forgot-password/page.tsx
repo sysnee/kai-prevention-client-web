@@ -2,10 +2,12 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { CircularProgress, useTheme } from '@mui/material'
+import { CircularProgress } from '@mui/material'
 import { z } from 'zod'
 import Image from 'next/image'
-import logoImage from '@/app/assets/kai-pc.png'
+import kaiLogo from '../../assets/kai-pc.png'
+import loginBackground from '../../assets/login-1.jpg'
+import '../login/styles.css'
 
 const forgotPasswordSchema = z.object({
     email: z.string().email('Invalid email format')
@@ -13,7 +15,6 @@ const forgotPasswordSchema = z.object({
 
 export default function ForgotPasswordPage() {
     const router = useRouter()
-    const theme = useTheme()
     const [email, setEmail] = useState('')
     const [emailError, setEmailError] = useState('')
     const [isLoading, setIsLoading] = useState(false)
@@ -61,95 +62,105 @@ export default function ForgotPasswordPage() {
     }
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-black">
-            <div className="w-full max-w-md py-12 px-8 bg-white rounded-md">
-                <div className="flex justify-center mb-6">
-                    <Image
-                        src={logoImage}
-                        alt="KAI Prevention Center"
-                        width={90}
-                        height={60}
-                    />
-                </div>
+        <div className="flex h-screen login-page">
+            {/* Left side - Background image */}
+            <div className="hidden md:block md:w-1/2 relative">
+                <Image
+                    src={loginBackground}
+                    alt="KAI Prevention Center"
+                    fill
+                    style={{ objectFit: 'cover', objectPosition: 'center' }}
+                    priority
+                />
+            </div>
 
-                <h1 className="text-2xl font-normal text-center mb-1">Esqueceu sua senha?</h1>
+            {/* Right side - Form */}
+            <div className="w-full md:w-1/2 flex items-center justify-center bg-white">
+                <div className="w-full max-w-md px-8 py-12">
+                    <div className="flex justify-center mb-8">
+                        <Image
+                            src={kaiLogo}
+                            alt="KAI Prevention Center"
+                            width={120}
+                            height={80}
+                            priority
+                        />
+                    </div>
 
-                {!isSubmitted ? (
-                    <>
-                        <p className="text-center text-gray-600 mb-6">
-                            Insira seu endereço de e-mail e lhe enviaremos instruções para redefinir sua senha.
-                        </p>
+                    <h1 className="text-2xl text-center text-gray-700 mb-6">FORGOT YOUR PASSWORD?</h1>
 
-                        {requestError && (
-                            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-md">
-                                {requestError}
-                            </div>
-                        )}
-
-                        <form onSubmit={handleSubmit}>
-                            <div className="mb-6">
-                                <label className="block text-sm mb-1">
-                                    Endereço de e-mail*
-                                </label>
-                                <input
-                                    type="email"
-                                    value={email}
-                                    onChange={handleChange}
-                                    required
-                                    disabled={isLoading}
-                                    className="w-full px-3 py-2 rounded-md focus:ring-2 focus:ring-kai-primary focus:border-transparent"
-                                    style={{
-                                        border: emailError
-                                            ? "1px solid #dc2626"
-                                            : theme.palette.mode === 'light'
-                                                ? "1px solid rgba(229,231,235,255)"
-                                                : "1px solid hsla(220, 20%, 25%, 0.6)",
-                                        outline: 'none'
-                                    }}
-                                />
-                                {emailError && <p className="mt-1 text-sm text-red-600">{emailError}</p>}
-                            </div>
-
-                            <div className="flex flex-col gap-3">
-                                <button
-                                    type="submit"
-                                    disabled={isLoading}
-                                    className="w-full py-2 px-4 bg-orange-400 text-white rounded-md hover:bg-orange-500 transition-colors"
-                                >
-                                    {isLoading ? (
-                                        <CircularProgress size={24} color="inherit" />
-                                    ) : (
-                                        'Continuar'
-                                    )}
-                                </button>
-
-                                <button
-                                    type="button"
-                                    onClick={navigateToLogin}
-                                    className="w-full py-2 px-4 text-center text-blue-600 hover:text-blue-800 text-sm"
-                                >
-                                    Tentar entrar novamente
-                                </button>
-                            </div>
-                        </form>
-                    </>
-                ) : (
-                    <>
-                        <div className="text-center mb-6">
-                            <p className="text-green-600 mb-2">Senha reset link sent!</p>
-                            <p className="text-gray-600">
-                                Please check your email for instructions to reset your password.
+                    {!isSubmitted ? (
+                        <>
+                            <p className="text-center text-gray-600 mb-8">
+                                Enter your email address and we'll send you instructions to reset your password.
                             </p>
-                        </div>
 
-                        <button
-                            onClick={navigateToLogin}
-                            className="w-full py-2 px-4 bg-orange-400 text-white rounded-md hover:bg-orange-500 transition-colors"
-                        >
-                            Return to Login
-                        </button>
-                    </>
-                )}
+                            {requestError && (
+                                <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-md">
+                                    {requestError}
+                                </div>
+                            )}
+
+                            <form onSubmit={handleSubmit}>
+                                <div className="mb-6">
+                                    <input
+                                        type="email"
+                                        value={email}
+                                        onChange={handleChange}
+                                        required
+                                        disabled={isLoading}
+                                        placeholder="E-mail"
+                                        className="kai-gradient-input"
+                                    />
+                                    {emailError && <p className="mt-1 text-sm text-red-600">{emailError}</p>}
+                                </div>
+
+                                <div className="flex flex-col gap-4">
+                                    <button
+                                        type="submit"
+                                        disabled={isLoading}
+                                        className="kai-gradient-button w-full py-3"
+                                    >
+                                        {isLoading ? (
+                                            <CircularProgress size={24} color="inherit" />
+                                        ) : (
+                                            'Continue'
+                                        )}
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={navigateToLogin}
+                                        className="text-center text-kai-primary hover:underline mt-2"
+                                    >
+                                        Back to login
+                                    </button>
+                                </div>
+                            </form>
+                        </>
+                    ) : (
+                        <>
+                            <div className="text-center mb-8">
+                                <div className="flex justify-center mb-4 text-green-500">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <p className="text-green-600 text-xl font-medium mb-2">Password reset link sent!</p>
+                                <p className="text-gray-600">
+                                    Please check your email for instructions to reset your password.
+                                </p>
+                            </div>
+
+                            <button
+                                onClick={navigateToLogin}
+                                className="kai-gradient-button w-full py-3"
+                            >
+                                Return to Login
+                            </button>
+                        </>
+                    )}
+                </div>
             </div>
         </div>
     )

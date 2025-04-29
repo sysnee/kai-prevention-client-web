@@ -40,7 +40,6 @@ function BaseLayout({ children }: { children: ReactNode }) {
                 overflow: 'hidden',
                 position: 'relative',
                 boxSizing: 'border-box',
-                p: 2,
                 backgroundColor: theme.palette.mode === 'dark' ? 'background.paper' : 'background.default'
               }}>
               <Header />

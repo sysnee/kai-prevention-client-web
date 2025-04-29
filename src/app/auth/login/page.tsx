@@ -54,7 +54,7 @@ export default function LoginPage() {
                 return
             }
 
-            router.push('/dashboard')
+            router.push('/')
         } catch (error) {
             if (error instanceof z.ZodError) {
                 const formattedErrors = error.errors.reduce((acc, curr) => {
@@ -97,7 +97,7 @@ export default function LoginPage() {
                         />
                     </div>
 
-                    <h1 className="text-2xl text-center text-gray-700 mb-10">LOGIN TO YOUR ACCOUNT</h1>
+                    <h1 className="text-2xl text-center text-gray-700 mb-10">ENTRAR NA SUA CONTA</h1>
 
                     {loginError && (
                         <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-md">
@@ -155,13 +155,13 @@ export default function LoginPage() {
 
                         <div className="text-center">
                             <p className="text-gray-600">
-                                Forgot your password?
+                                Esqueceu sua senha?
                                 <button
                                     type="button"
                                     onClick={navigateToForgotPassword}
                                     className="text-kai-primary font-medium hover:underline ml-1"
                                 >
-                                    Reset password
+                                    Redefinir senha
                                 </button>
                             </p>
                         </div>
