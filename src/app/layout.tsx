@@ -7,7 +7,7 @@ import '@fontsource/inter';
 import { Providers } from './providers';
 import { ToastProvider } from './providers/toast-provider';
 import { NextAuthProvider } from './auth/providers/next-auth-provider';
-
+import Header from './components/Header';
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
   variable: '--font-geist-sans',
@@ -39,7 +39,10 @@ export default async function RootLayout({
           <Providers>
             <ToastProvider />
             <AppRouterCacheProvider>
-              <StyledEngineProvider injectFirst>{children}</StyledEngineProvider>
+              <StyledEngineProvider injectFirst>
+                <Header />
+                {children}
+              </StyledEngineProvider>
             </AppRouterCacheProvider>
           </Providers>
         </NextAuthProvider>

@@ -92,7 +92,7 @@ const systemsMapping: Record<SystemType, Omit<SystemInfo, 'findingsCount' | 'sev
     }
 }
 
-export default function BodySystemView({ reportId }: { reportId: string }) {
+export default function BodySystemView({ reportId, studyId }: { reportId: string, studyId: string }) {
     const [activeSystem, setActiveSystem] = useState<SystemType>('nervoso')
     const [systems, setSystems] = useState<Record<SystemType, SystemInfo>>({} as Record<SystemType, SystemInfo>)
     const [loading, setLoading] = useState(true)
@@ -287,9 +287,40 @@ export default function BodySystemView({ reportId }: { reportId: string }) {
                     </button>
                 </div>
 
-                <button className="border border-gray-300 rounded-full py-2 px-4 text-sm text-gray-600 mx-auto">
-                    Ver todas as imagens
+                <button className="border-[1px] bg-gradient-to-r p-[1px] from-green-200 via-amber-200 to-green-200 rounded-full mb-8">
+                    <span className="block bg-white rounded-full py-2 px-4 text-sm text-gray-600">
+                        Ver todas as imagens
+                    </span>
                 </button>
+
+                <div className="mt-4">
+                    <h3 className="text-gray-700 mb-2">Relatório</h3>
+                    <p className="text-gray-600 text-sm mb-4">
+                        Este relatório médico/radiológico original preparado por e para médicos.
+                    </p>
+
+                    <div className="flex flex-col space-y-3">
+                        <a
+                            href="#"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                window.open(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/v1'}/findings/service-request/${studyId}/report`, '_blank');
+                            }}
+                            className="text-blue-500 hover:underline text-sm"
+                        >
+                            Ver Relatório Médico Oficial
+                        </a>
+                        <a href="#" className="text-blue-500 hover:underline text-sm">Baixar imagens como DICOM</a>
+                    </div>
+                </div>
+
+                <div className="mt-6 border-t border-gray-200 pt-4">
+                    <h3 className="text-gray-700 mb-2">Outros arquivos</h3>
+                    <div className="flex flex-col space-y-3">
+                        <a href="#" className="text-blue-500 hover:underline text-sm">Ver recibo de digitalização</a>
+                        <a href="#" className="text-blue-500 hover:underline text-sm">Ver Formulário de Histórico Médico</a>
+                    </div>
+                </div>
             </div>
         </div>
     )

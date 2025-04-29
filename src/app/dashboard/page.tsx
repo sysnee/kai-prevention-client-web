@@ -138,7 +138,7 @@ export default function DashboardPage() {
                                             {studies[0].clientName} - Varredura completa de corpo inteiro <span className="text-green-500 font-normal">/ {studies[0].status === 'COMPLETED' ? 'Concluída' : 'Pendente'}</span>
                                         </h2>
                                     </div>
-                                    <BodySystemView reportId={studies[0].exams[0].reportId} />
+                                    <BodySystemView reportId={studies[0].exams[0].reportId} studyId={studies[0].id} />
                                 </div>
                             </div>
                         ) : (
