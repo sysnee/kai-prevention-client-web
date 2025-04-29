@@ -82,7 +82,7 @@ const systems: Record<SystemType, SystemInfo> = {
     }
 }
 
-export default function BodySystemView() {
+export default function BodySystemView({ reportId }: { reportId: string }) {
     const [activeSystem, setActiveSystem] = useState<SystemType>('nervoso')
     const router = useRouter()
 
@@ -98,7 +98,7 @@ export default function BodySystemView() {
     const rightSystems: SystemType[] = ['urinario', 'reprodutivo', 'digestivo', 'musculoesqueletico'];
 
     const handleSystemClick = (systemKey: SystemType) => {
-        router.push('/findings')
+        router.push(`/findings?reportId=${reportId}&system=${systems[systemKey].name}`)
     }
 
     const renderSystemButton = (systemKey: SystemType) => {

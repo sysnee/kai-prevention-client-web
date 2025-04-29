@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useRouter, usePathname } from 'next/navigation'
 import api from '@/lib/api'
 import CollapsibleItem from '../components/CollapsibleItem'
+import FindingCard from '../components/FindingCard'
 
 // Import system icons
 import sistemaNervosoIcon from '../assets/icons/sistema-nervoso-icon.svg'
@@ -18,6 +20,7 @@ import sistemaMusculoesqueleticoIcon from '../assets/icons/sistema-musculoesquel
 
 // Types
 type SystemType = 'nervoso' | 'respiratorio' | 'circulatorio' | 'endocrino' | 'urinario' | 'reprodutivo' | 'digestivo' | 'musculoesqueletico'
+type Severity = 'none' | 'low' | 'medium' | 'high' | 'severe'
 
 interface SystemInfo {
     name: string
@@ -45,10 +48,24 @@ interface Pathology {
 }
 
 interface Finding {
-    id: number
-    title: string
-    description: string
-    type: 'informativa' | 'menor' | 'maior'
+    id: string
+    system: string
+    organ: string
+    pathology: string
+    image_url: string | null
+    details: string
+    recommendation_title: string
+    recommendation_description: string
+    created_at: string
+    updated_at: string
+    severity: Severity
+    report: {
+        id: string
+        status: string
+        content: string
+        createdAt: string
+        updatedAt: string
+    }
 }
 
 const systems: Record<SystemType, SystemInfo> = {
@@ -100,16 +117,60 @@ export const LoadingSpinner = () => (
     </div>
 )
 
-export default function FindingsPage() {
-    const [expandedSystems, setExpandedSystems] = useState<string[]>(['nervoso'])
+export default function FindingsPage({ searchParams }: { searchParams: { reportId: string, system: string, organ?: string, pathology?: string } }) {
+    const router = useRouter()
+    const pathname = usePathname()
+    const [expandedSystems, setExpandedSystems] = useState<string[]>([])
     const [expandedOrgans, setExpandedOrgans] = useState<string[]>([])
     const [expandedPathologies, setExpandedPathologies] = useState<string[]>([])
-    const [selectedSystem, setSelectedSystem] = useState<string>('Sistema Nervoso')
+    const [selectedSystem, setSelectedSystem] = useState<string>('')
     const [organs, setOrgans] = useState<Organ[]>([])
     const [pathologies, setPathologies] = useState<Record<string, Pathology[]>>({})
     const [findings, setFindings] = useState<Record<string, Finding[]>>({})
+    const [currentFindings, setCurrentFindings] = useState<Finding[]>([])
     const [loadingOrgans, setLoadingOrgans] = useState<boolean>(false)
     const [loadingPathologies, setLoadingPathologies] = useState<Record<string, boolean>>({})
+    const [loadingFindings, setLoadingFindings] = useState<boolean>(false)
+
+    // Initialize state based on URL params
+    useEffect(() => {
+        if (searchParams.system) {
+            const systemKey = Object.keys(systems).find(key =>
+                systems[key as SystemType].name === searchParams.system
+            )
+            if (systemKey) {
+                setExpandedSystems([systemKey])
+                setSelectedSystem(searchParams.system)
+            }
+        }
+    }, [searchParams.system])
+
+    // Fetch findings based on URL params
+    useEffect(() => {
+        const fetchFindings = async () => {
+            if (!searchParams.reportId) return
+
+            try {
+                setLoadingFindings(true)
+                const params: any = { reportId: searchParams.reportId }
+
+                if (searchParams.system) params.system = searchParams.system
+                if (searchParams.organ) params.organ = searchParams.organ
+                if (searchParams.pathology) params.pathology = searchParams.pathology
+
+                const result = await api.get('/findings', { params })
+                if (result && result.data) {
+                    setCurrentFindings(result.data)
+                }
+            } catch (error) {
+                console.error('Error fetching findings:', error)
+            } finally {
+                setLoadingFindings(false)
+            }
+        }
+
+        fetchFindings()
+    }, [searchParams.reportId, searchParams.system, searchParams.organ, searchParams.pathology])
 
     useEffect(() => {
         // Clear previous organs when switching systems
@@ -118,20 +179,49 @@ export default function FindingsPage() {
 
         // Load organs for the selected system
         const fetchOrgans = async () => {
+            if (!selectedSystem) return
+
             try {
                 setLoadingOrgans(true)
                 const result = await api.get(`/system/organs?system=${selectedSystem}`)
                 setOrgans(result || [])
+
+                // If organ param is present, expand it
+                if (searchParams.organ) {
+                    const organKey = result?.find((o: Organ) => o.label === searchParams.organ)?.key
+                    if (organKey) {
+                        setExpandedOrgans([organKey])
+                    }
+                }
             } catch (error) {
                 console.error('Error fetching organs:', error)
             } finally {
-                // Add small delay for smoother transition
                 setLoadingOrgans(false)
             }
         }
 
         fetchOrgans()
-    }, [selectedSystem])
+    }, [selectedSystem, searchParams.organ])
+
+    const updateUrlParams = (newParams: Record<string, string | undefined>) => {
+        const params = new URLSearchParams()
+
+        // Always include reportId
+        if (searchParams.reportId) {
+            params.set('reportId', searchParams.reportId)
+        }
+
+        // Update with new params
+        Object.entries(newParams).forEach(([key, value]) => {
+            if (value) {
+                params.set(key, value)
+            } else {
+                params.delete(key)
+            }
+        })
+
+        router.push(`${pathname}?${params.toString()}`)
+    }
 
     const handleSystemToggle = (systemKey: string) => {
         setExpandedSystems(prev => {
@@ -144,6 +234,13 @@ export default function FindingsPage() {
             const system = systems[systemKey as SystemType]
             if (system) {
                 setSelectedSystem(system.name)
+
+                // Update URL with system param
+                updateUrlParams({
+                    system: system.name,
+                    organ: undefined,
+                    pathology: undefined
+                })
             }
             return [systemKey]
         })
@@ -152,8 +249,24 @@ export default function FindingsPage() {
     const handleOrganToggle = async (organKey: string, organLabel: string) => {
         setExpandedOrgans(prev => {
             if (prev.includes(organKey)) {
-                return prev.filter(key => key !== organKey)
+                const newOrgans = prev.filter(key => key !== organKey)
+
+                // Update URL, removing organ param if closing
+                updateUrlParams({
+                    system: selectedSystem,
+                    organ: undefined,
+                    pathology: undefined
+                })
+
+                return newOrgans
             } else {
+                // Update URL with organ param
+                updateUrlParams({
+                    system: selectedSystem,
+                    organ: organLabel,
+                    pathology: undefined
+                })
+
                 return [...prev, organKey]
             }
         })
@@ -165,6 +278,15 @@ export default function FindingsPage() {
                 const result = await api.get(`/system/pathologies?system=${selectedSystem}&organ=${organLabel}`)
 
                 setPathologies(prev => ({ ...prev, [organKey]: result || [] }))
+
+                // If pathology param is present, expand it
+                if (searchParams.pathology) {
+                    const pathologyKey = result?.find((p: Pathology) => p.label === searchParams.pathology)?.key
+                    if (pathologyKey) {
+                        setExpandedPathologies([pathologyKey])
+                    }
+                }
+
                 setLoadingPathologies(prev => ({ ...prev, [organKey]: false }))
             } catch (error) {
                 console.error('Error fetching pathologies:', error)
@@ -172,25 +294,30 @@ export default function FindingsPage() {
         }
     }
 
-    const handlePathologyToggle = async (pathologyKey: string) => {
+    const handlePathologyToggle = async (pathologyKey: string, pathologyLabel: string, organLabel: string) => {
         setExpandedPathologies(prev => {
             if (prev.includes(pathologyKey)) {
-                return prev.filter(key => key !== pathologyKey)
+                const newPathologies = prev.filter(key => key !== pathologyKey)
+
+                // Update URL, removing pathology param if closing
+                updateUrlParams({
+                    system: selectedSystem,
+                    organ: organLabel,
+                    pathology: undefined
+                })
+
+                return newPathologies
             } else {
+                // Update URL with pathology param
+                updateUrlParams({
+                    system: selectedSystem,
+                    organ: organLabel,
+                    pathology: pathologyLabel
+                })
+
                 return [...prev, pathologyKey]
             }
         })
-
-        // Mock findings for now
-        if (!findings[pathologyKey]) {
-            setFindings(prev => ({
-                ...prev,
-                [pathologyKey]: [
-                    { id: 1, title: 'Achado menor', description: 'Descrição do achado menor', type: 'menor' },
-                    { id: 2, title: 'Achado informativo', description: 'Descrição do achado informativo', type: 'informativa' }
-                ]
-            }))
-        }
     }
 
     const getFindingsText = (count: number) => {
@@ -270,7 +397,8 @@ export default function FindingsPage() {
                                                                         : null
                                                                 }
                                                                 isOpen={isPathologyOpen}
-                                                                onToggle={() => handlePathologyToggle(pathology.key)}
+                                                                onToggle={() => handlePathologyToggle(pathology.key, pathology.label, organ.label)}
+                                                                // onToggle={() => { }}
                                                                 level={2}
                                                             >
                                                                 {findings[pathology.key]?.map((finding) => (
@@ -278,8 +406,9 @@ export default function FindingsPage() {
                                                                         key={`finding-${finding.id}`}
                                                                         className="py-2 pl-4"
                                                                     >
-                                                                        <p className={`text-sm ${finding.type === 'informativa' ? 'text-blue-500' : 'text-amber-500'}`}>
-                                                                            {finding.title}
+                                                                        <p className={`text-sm ${finding.severity === 'none' ? 'text-blue-500' : 'text-amber-500'
+                                                                            }`}>
+                                                                            {finding.pathology}
                                                                         </p>
                                                                     </div>
                                                                 ))}
@@ -299,8 +428,22 @@ export default function FindingsPage() {
 
             {/* Content area */}
             <div className="flex-1 p-6">
-                <div className="bg-gray-50 rounded-xl p-6">
-                    <p className="text-gray-600">Content area for findings details will be implemented in the next step</p>
+                <div className="flex-1 max-w-2xl">
+                    {loadingFindings ? (
+                        <div className="flex justify-center items-center h-60">
+                            <LoadingSpinner />
+                        </div>
+                    ) : currentFindings.length > 0 ? (
+                        <div>
+                            {currentFindings.map(finding => (
+                                <FindingCard key={finding.id} finding={finding} />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="bg-gray-50 rounded-xl p-6 text-center text-gray-600">
+                            Selecione um achado para ver os detalhes
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
