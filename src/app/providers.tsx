@@ -3,7 +3,6 @@
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
-import { ToastProvider } from "./providers/toast-provider";
 
 const theme = createTheme({
   // Suas customizações de tema aqui
