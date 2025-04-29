@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
-import Header from '../components/Header'
 import Tabs from '../components/Tabs'
 import GradientSelect from '../components/GradientSelect'
 import BodySystemView from '../components/BodySystemView'
 import api from '@/lib/api'
+import { LoadingSpinner } from '../components/LoadingSpinner'
 
 interface Exam {
     id: string;
@@ -43,12 +43,6 @@ interface StudiesResponse {
         total: number;
     };
 }
-
-export const LoadingSpinner = () => (
-    <div className="flex justify-center py-4">
-        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-amber-500"></div>
-    </div>
-)
 
 export default function DashboardPage() {
     const { data: session } = useSession()

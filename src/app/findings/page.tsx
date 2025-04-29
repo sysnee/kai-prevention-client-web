@@ -17,6 +17,7 @@ import sistemaUrinarioIcon from '../assets/icons/sistema-urinario-icon.svg'
 import sistemaReprodutivoIcon from '../assets/icons/sistema-reprodutivo-icon.svg'
 import sistemaDigestivoIcon from '../assets/icons/sistema-digestivo-icon.svg'
 import sistemaMusculoesqueleticoIcon from '../assets/icons/sistema-musculoesqueletico-icon.svg'
+import { LoadingSpinner } from '../components/LoadingSpinner'
 
 // Types
 type SystemType = 'nervoso' | 'respiratorio' | 'circulatorio' | 'endocrino' | 'urinario' | 'reprodutivo' | 'digestivo' | 'musculoesqueletico'
@@ -120,12 +121,6 @@ const systemsMapping: Record<SystemType, Omit<SystemInfo, 'findingsCount'>> = {
         icon: sistemaMusculoesqueleticoIcon,
     }
 }
-
-export const LoadingSpinner = () => (
-    <div className="flex justify-center py-4">
-        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-amber-500"></div>
-    </div>
-)
 
 export default function FindingsPage() {
     const router = useRouter()

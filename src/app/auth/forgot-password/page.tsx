@@ -42,7 +42,7 @@ export default function ForgotPasswordPage() {
 
             if (!response.ok) {
                 const errorData = await response.json()
-                throw new Error(errorData.message || 'Failed to send password reset email')
+                throw new Error(errorData.message || 'Falha ao enviar e-mail de redefinição de senha')
             }
 
             setIsSubmitted(true)
@@ -50,7 +50,7 @@ export default function ForgotPasswordPage() {
             if (error instanceof z.ZodError) {
                 setEmailError(error.errors[0].message)
             } else {
-                setRequestError((error as Error).message || 'An error occurred')
+                setRequestError((error as Error).message || 'Ocorreu um erro')
             }
         } finally {
             setIsLoading(false)
@@ -87,12 +87,12 @@ export default function ForgotPasswordPage() {
                         />
                     </div>
 
-                    <h1 className="text-2xl text-center text-gray-700 mb-6">FORGOT YOUR PASSWORD?</h1>
+                    <h1 className="text-2xl text-center text-gray-700 mb-6">ESQUECEU SUA SENHA?</h1>
 
                     {!isSubmitted ? (
                         <>
                             <p className="text-center text-gray-600 mb-8">
-                                Enter your email address and we'll send you instructions to reset your password.
+                                Digite seu e-mail e receba instruções para redefinir sua senha.
                             </p>
 
                             {requestError && (
@@ -124,7 +124,7 @@ export default function ForgotPasswordPage() {
                                         {isLoading ? (
                                             <CircularProgress size={24} color="inherit" />
                                         ) : (
-                                            'Continue'
+                                            <>Continue</>
                                         )}
                                     </button>
 
@@ -133,7 +133,7 @@ export default function ForgotPasswordPage() {
                                         onClick={navigateToLogin}
                                         className="text-center text-kai-primary hover:underline mt-2"
                                     >
-                                        Back to login
+                                        Voltar para o login
                                     </button>
                                 </div>
                             </form>
@@ -146,9 +146,9 @@ export default function ForgotPasswordPage() {
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                 </div>
-                                <p className="text-green-600 text-xl font-medium mb-2">Password reset link sent!</p>
+                                <p className="text-green-600 text-xl font-medium mb-2">Link de redefinição de senha enviado!</p>
                                 <p className="text-gray-600">
-                                    Please check your email for instructions to reset your password.
+                                    Verifique seu e-mail para instruções para redefinir sua senha.
                                 </p>
                             </div>
 
@@ -156,7 +156,7 @@ export default function ForgotPasswordPage() {
                                 onClick={navigateToLogin}
                                 className="kai-gradient-button w-full py-3"
                             >
-                                Return to Login
+                                Voltar para o login
                             </button>
                         </>
                     )}
