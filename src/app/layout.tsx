@@ -40,7 +40,6 @@ export default async function RootLayout({
             <ToastProvider />
             <AppRouterCacheProvider>
               <StyledEngineProvider injectFirst>
-                <Header />
                 {children}
               </StyledEngineProvider>
             </AppRouterCacheProvider>
