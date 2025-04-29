@@ -91,6 +91,36 @@ export default function BodySystemView() {
             : `${count} pequenas descobertas`
     }
 
+    // Split systems into left and right columns
+    const leftSystems: SystemType[] = ['nervoso', 'respiratorio', 'circulatorio', 'endocrino'];
+    const rightSystems: SystemType[] = ['urinario', 'reprodutivo', 'digestivo', 'musculoesqueletico'];
+
+    const renderSystemButton = (systemKey: SystemType) => {
+        const system = systems[systemKey];
+        const isActive = activeSystem === systemKey;
+
+        return (
+            <div
+                key={systemKey}
+                className={`flex items-center gap-3 cursor-pointer mb-4 transition-colors duration-200 ${isActive ? 'opacity-100' : 'opacity-70'}`}
+                onMouseEnter={() => setActiveSystem(systemKey)}
+            >
+                <Image
+                    src={system.icon}
+                    alt={system.name}
+                    width={36}
+                    height={36}
+                />
+                <div>
+                    <p className="text-gray-700 text-sm">{system.name}</p>
+                    <p className={`text-xs ${system.findings > 0 ? 'text-amber-500' : 'text-green-500'}`}>
+                        {getFindingsText(system.findings)}
+                    </p>
+                </div>
+            </div>
+        );
+    };
+
     return (
         <div className="flex flex-col md:flex-row gap-8 bg-white rounded-xl shadow-sm p-8">
             <div className="md:w-1/2 flex flex-col">
@@ -102,8 +132,12 @@ export default function BodySystemView() {
                     </p>
                 </div>
 
-                <div className="flex mb-8 justify-center">
-                    <div className="relative h-72 w-48">
+                <div className="flex flex-row justify-between mb-6">
+                    <div className="flex flex-col justify-between">
+                        {leftSystems.map(renderSystemButton)}
+                    </div>
+
+                    <div className="relative h-[450px] w-48 mx-2">
                         <Image
                             src={systems[activeSystem].imagePath}
                             alt={`Ilustração ${systems[activeSystem].name}`}
@@ -112,39 +146,13 @@ export default function BodySystemView() {
                             className="transition-opacity duration-300"
                         />
                     </div>
+
+                    <div className="flex flex-col justify-between">
+                        {rightSystems.map(renderSystemButton)}
+                    </div>
                 </div>
 
-                <div className="flex-1 grid grid-cols-2 gap-6">
-                    {Object.entries(systems).map(([key, system]) => {
-                        const systemKey = key as SystemType
-                        const isActive = activeSystem === systemKey
-
-                        return (
-                            <div
-                                key={systemKey}
-                                className={`flex items-center gap-3 cursor-pointer transition-colors duration-200 ${isActive ? 'opacity-100' : 'opacity-70'}`}
-                                onMouseEnter={() => setActiveSystem(systemKey)}
-                            >
-                                <div className="w-12 h-12 flex items-center justify-center bg-green-100 rounded-full">
-                                    <Image
-                                        src={system.icon}
-                                        alt={system.name}
-                                        width={24}
-                                        height={24}
-                                    />
-                                </div>
-                                <div>
-                                    <p className="text-gray-700 text-sm">{system.name}</p>
-                                    <p className={`text-xs ${system.findings > 0 ? 'text-amber-500' : 'text-green-500'}`}>
-                                        {getFindingsText(system.findings)}
-                                    </p>
-                                </div>
-                            </div>
-                        )
-                    })}
-                </div>
-
-                <div className="mt-8 text-xs text-center text-gray-500">
+                <div className="text-xs text-center text-gray-500 mt-4">
                     Esta ilustração é apenas para fins educacionais
                 </div>
             </div>
