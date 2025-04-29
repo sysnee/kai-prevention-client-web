@@ -70,19 +70,21 @@ export default function FindingCard({ finding }: FindingCardProps) {
                         1 descoberta {getSeverityText(finding.severity)}
                     </span>
                 </div>
-                <div className="mt-2">
+                <div className="mt-2 text-gray-400">
                     Detectamos um {finding.pathology.toLowerCase()}.
                 </div>
-                <div className="mt-2">
+                <div className="mt-2 text-gray-400">
                     {finding.details}
                 </div>
 
-                <button
-                    className="mt-4 text-blue-600 text-sm font-medium hover:underline focus:outline-none"
-                    onClick={() => setExpanded(!expanded)}
-                >
-                    {expanded ? '-Clique para ocultar' : '+Clique para expandir'}
-                </button>
+                <div className="mt-4 flex justify-center">
+                    <button
+                        className="text-[#5B5B5F] text-sm font-semibold hover:underline focus:outline-none font-[Poppins-SemiBold sans-serif]"
+                        onClick={() => setExpanded(!expanded)}
+                    >
+                        {expanded ? '-Clique para ocultar' : '+Clique para expandir'}
+                    </button>
+                </div>
 
                 {expanded && (
                     <div className="mt-4 bg-gray-50 p-4 rounded-lg">

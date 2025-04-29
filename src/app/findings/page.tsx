@@ -1,12 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import Image from 'next/image'
-import { motion, AnimatePresence } from 'framer-motion'
-import { useRouter, usePathname } from 'next/navigation'
+import { useState, useEffect, useCallback } from 'react'
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import api from '@/lib/api'
 import CollapsibleItem from '../components/CollapsibleItem'
 import FindingCard from '../components/FindingCard'
+import { debounce } from 'lodash'
 
 // Import system icons
 import sistemaNervosoIcon from '../assets/icons/sistema-nervoso-icon.svg'
@@ -117,9 +116,17 @@ export const LoadingSpinner = () => (
     </div>
 )
 
-export default function FindingsPage({ searchParams }: { searchParams: { reportId: string, system: string, organ?: string, pathology?: string } }) {
+export default function FindingsPage() {
     const router = useRouter()
     const pathname = usePathname()
+    const searchParams = useSearchParams()
+
+    // Get params safely
+    const reportId = searchParams.get('reportId') || ''
+    const systemParam = searchParams.get('system') || ''
+    const organParam = searchParams.get('organ') || undefined
+    const pathologyParam = searchParams.get('pathology') || undefined
+
     const [expandedSystems, setExpandedSystems] = useState<string[]>([])
     const [expandedOrgans, setExpandedOrgans] = useState<string[]>([])
     const [expandedPathologies, setExpandedPathologies] = useState<string[]>([])
@@ -132,31 +139,54 @@ export default function FindingsPage({ searchParams }: { searchParams: { reportI
     const [loadingPathologies, setLoadingPathologies] = useState<Record<string, boolean>>({})
     const [loadingFindings, setLoadingFindings] = useState<boolean>(false)
 
+    // Debounced URL update function to prevent multiple rapid updates
+    const updateUrl = useCallback(
+        debounce((params: Record<string, string | undefined>) => {
+            const urlParams = new URLSearchParams()
+
+            // Always include reportId
+            if (reportId) {
+                urlParams.set('reportId', reportId)
+            }
+
+            // Add other params only if they have values
+            Object.entries(params).forEach(([key, value]) => {
+                if (value) {
+                    urlParams.set(key, value)
+                }
+            })
+
+            const newUrl = `${pathname}?${urlParams.toString()}`
+            router.push(newUrl, { scroll: false })
+        }, 300),
+        [pathname, router, reportId]
+    )
+
     // Initialize state based on URL params
     useEffect(() => {
-        if (searchParams.system) {
+        if (systemParam) {
             const systemKey = Object.keys(systems).find(key =>
-                systems[key as SystemType].name === searchParams.system
+                systems[key as SystemType].name === systemParam
             )
             if (systemKey) {
                 setExpandedSystems([systemKey])
-                setSelectedSystem(searchParams.system)
+                setSelectedSystem(systemParam)
             }
         }
-    }, [searchParams.system])
+    }, [])
 
-    // Fetch findings based on URL params
+    // Effect to fetch findings when URL params change
     useEffect(() => {
         const fetchFindings = async () => {
-            if (!searchParams.reportId) return
+            if (!reportId) return
 
             try {
                 setLoadingFindings(true)
-                const params: any = { reportId: searchParams.reportId }
+                const params: any = { reportId }
 
-                if (searchParams.system) params.system = searchParams.system
-                if (searchParams.organ) params.organ = searchParams.organ
-                if (searchParams.pathology) params.pathology = searchParams.pathology
+                if (systemParam) params.system = systemParam
+                if (organParam) params.organ = organParam
+                if (pathologyParam) params.pathology = pathologyParam
 
                 const result = await api.get('/findings', { params })
                 if (result && result.data) {
@@ -170,25 +200,23 @@ export default function FindingsPage({ searchParams }: { searchParams: { reportI
         }
 
         fetchFindings()
-    }, [searchParams.reportId, searchParams.system, searchParams.organ, searchParams.pathology])
+    }, [reportId, systemParam, organParam, pathologyParam])
 
+    // Load organs when system changes
     useEffect(() => {
-        // Clear previous organs when switching systems
-        setOrgans([])
-        setExpandedOrgans([])
-
-        // Load organs for the selected system
         const fetchOrgans = async () => {
             if (!selectedSystem) return
 
             try {
                 setLoadingOrgans(true)
+                setOrgans([])
+
                 const result = await api.get(`/system/organs?system=${selectedSystem}`)
                 setOrgans(result || [])
 
                 // If organ param is present, expand it
-                if (searchParams.organ) {
-                    const organKey = result?.find((o: Organ) => o.label === searchParams.organ)?.key
+                if (organParam) {
+                    const organKey = result?.find((o: Organ) => o.label === organParam)?.key
                     if (organKey) {
                         setExpandedOrgans([organKey])
                     }
@@ -201,27 +229,7 @@ export default function FindingsPage({ searchParams }: { searchParams: { reportI
         }
 
         fetchOrgans()
-    }, [selectedSystem, searchParams.organ])
-
-    const updateUrlParams = (newParams: Record<string, string | undefined>) => {
-        const params = new URLSearchParams()
-
-        // Always include reportId
-        if (searchParams.reportId) {
-            params.set('reportId', searchParams.reportId)
-        }
-
-        // Update with new params
-        Object.entries(newParams).forEach(([key, value]) => {
-            if (value) {
-                params.set(key, value)
-            } else {
-                params.delete(key)
-            }
-        })
-
-        router.push(`${pathname}?${params.toString()}`)
-    }
+    }, [selectedSystem, organParam])
 
     const handleSystemToggle = (systemKey: string) => {
         setExpandedSystems(prev => {
@@ -235,8 +243,8 @@ export default function FindingsPage({ searchParams }: { searchParams: { reportI
             if (system) {
                 setSelectedSystem(system.name)
 
-                // Update URL with system param
-                updateUrlParams({
+                // Update URL with new system and clear organ/pathology
+                updateUrl({
                     system: system.name,
                     organ: undefined,
                     pathology: undefined
@@ -247,76 +255,58 @@ export default function FindingsPage({ searchParams }: { searchParams: { reportI
     }
 
     const handleOrganToggle = async (organKey: string, organLabel: string) => {
+        const isClosing = expandedOrgans.includes(organKey)
+
         setExpandedOrgans(prev => {
-            if (prev.includes(organKey)) {
-                const newOrgans = prev.filter(key => key !== organKey)
-
-                // Update URL, removing organ param if closing
-                updateUrlParams({
-                    system: selectedSystem,
-                    organ: undefined,
-                    pathology: undefined
-                })
-
-                return newOrgans
-            } else {
-                // Update URL with organ param
-                updateUrlParams({
-                    system: selectedSystem,
-                    organ: organLabel,
-                    pathology: undefined
-                })
-
-                return [...prev, organKey]
-            }
+            return isClosing
+                ? prev.filter(key => key !== organKey)
+                : [...prev, organKey]
         })
 
-        // Fetch pathologies for this organ if not already fetched
-        if (!pathologies[organKey]) {
+        // Update URL
+        updateUrl({
+            system: selectedSystem,
+            organ: isClosing ? undefined : organLabel,
+            pathology: undefined
+        })
+
+        // Fetch pathologies for this organ if not already fetched and we're opening
+        if (!pathologies[organKey] && !isClosing) {
             try {
                 setLoadingPathologies(prev => ({ ...prev, [organKey]: true }))
-                const result = await api.get(`/system/pathologies?system=${selectedSystem}&organ=${organLabel}`)
 
+                const result = await api.get(`/system/pathologies?system=${selectedSystem}&organ=${organLabel}`)
                 setPathologies(prev => ({ ...prev, [organKey]: result || [] }))
 
                 // If pathology param is present, expand it
-                if (searchParams.pathology) {
-                    const pathologyKey = result?.find((p: Pathology) => p.label === searchParams.pathology)?.key
+                if (pathologyParam) {
+                    const pathologyKey = result?.find((p: Pathology) => p.label === pathologyParam)?.key
                     if (pathologyKey) {
                         setExpandedPathologies([pathologyKey])
                     }
                 }
-
-                setLoadingPathologies(prev => ({ ...prev, [organKey]: false }))
             } catch (error) {
                 console.error('Error fetching pathologies:', error)
+            } finally {
+                setLoadingPathologies(prev => ({ ...prev, [organKey]: false }))
             }
         }
     }
 
-    const handlePathologyToggle = async (pathologyKey: string, pathologyLabel: string, organLabel: string) => {
+    const handlePathologyToggle = (pathologyKey: string, pathologyLabel: string, organLabel: string) => {
+        const isClosing = expandedPathologies.includes(pathologyKey)
+
         setExpandedPathologies(prev => {
-            if (prev.includes(pathologyKey)) {
-                const newPathologies = prev.filter(key => key !== pathologyKey)
+            return isClosing
+                ? prev.filter(key => key !== pathologyKey)
+                : [...prev, pathologyKey]
+        })
 
-                // Update URL, removing pathology param if closing
-                updateUrlParams({
-                    system: selectedSystem,
-                    organ: organLabel,
-                    pathology: undefined
-                })
-
-                return newPathologies
-            } else {
-                // Update URL with pathology param
-                updateUrlParams({
-                    system: selectedSystem,
-                    organ: organLabel,
-                    pathology: pathologyLabel
-                })
-
-                return [...prev, pathologyKey]
-            }
+        // Update URL
+        updateUrl({
+            system: selectedSystem,
+            organ: organLabel,
+            pathology: isClosing ? undefined : pathologyLabel
         })
     }
 
@@ -328,7 +318,7 @@ export default function FindingsPage({ searchParams }: { searchParams: { reportI
     }
 
     return (
-        <div className="min-h-screen flex">
+        <div className="min-h-screen flex max-w-[1840px] mx-auto">
             {/* Sidebar */}
             <div className="w-[360px] border-r border-gray-200 overflow-y-auto p-4">
                 <h1 className="text-xl text-gray-700 font-normal mb-6">SUAS DESCOBERTAS</h1>
@@ -398,7 +388,6 @@ export default function FindingsPage({ searchParams }: { searchParams: { reportI
                                                                 }
                                                                 isOpen={isPathologyOpen}
                                                                 onToggle={() => handlePathologyToggle(pathology.key, pathology.label, organ.label)}
-                                                                // onToggle={() => { }}
                                                                 level={2}
                                                             >
                                                                 {findings[pathology.key]?.map((finding) => (
@@ -429,6 +418,19 @@ export default function FindingsPage({ searchParams }: { searchParams: { reportI
             {/* Content area */}
             <div className="flex-1 p-6">
                 <div className="flex-1 max-w-2xl">
+                    {/* Breadcrumb */}
+                    {selectedSystem && (
+                        <div className="mb-4 text-sm text-gray-600">
+                            <span>{selectedSystem}</span>
+                            {organParam && (
+                                <>
+                                    <span className="mx-2">→</span>
+                                    <span>{organParam}</span>
+                                </>
+                            )}
+                        </div>
+                    )}
+
                     {loadingFindings ? (
                         <div className="flex justify-center items-center h-60">
                             <LoadingSpinner />
