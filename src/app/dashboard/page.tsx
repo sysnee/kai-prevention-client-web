@@ -1,17 +1,87 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import Header from '../components/Header'
 import Tabs from '../components/Tabs'
 import GradientSelect from '../components/GradientSelect'
 import BodySystemView from '../components/BodySystemView'
+import api from '@/lib/api'
+
+interface Exam {
+    id: string;
+    modality: string;
+    description: string;
+    status: string;
+    accession: string | null;
+    reportId: string;
+    report: {
+        id: string;
+        status: string;
+        findingsCount: number;
+    };
+}
+
+interface Study {
+    id: string;
+    code: number;
+    clientName: string;
+    clientBirthdate: string;
+    clientGender: string;
+    clientCpf: string;
+    patientId: string;
+    examType: string;
+    status: string;
+    dateTime: string;
+    createdAt: string;
+    exams: Exam[];
+}
+
+interface StudiesResponse {
+    data: Study[];
+    meta: {
+        total: number;
+    };
+}
+
+export const LoadingSpinner = () => (
+    <div className="flex justify-center py-4">
+        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-amber-500"></div>
+    </div>
+)
 
 export default function DashboardPage() {
     const { data: session } = useSession()
     const [activeTab, setActiveTab] = useState('meus-estudos')
-    const [selectedMonth, setSelectedMonth] = useState('maio de 2026')
-    const [hasStudies, setHasStudies] = useState(true)
+    const [selectedMonth, setSelectedMonth] = useState('')
+    const [studies, setStudies] = useState<Study[]>([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
+
+    useEffect(() => {
+        const fetchStudies = async () => {
+            try {
+                setLoading(true)
+                const response = await api.get('/studies') as StudiesResponse
+                setStudies(response.data)
+
+                if (response.data.length > 0) {
+                    // Set initial selected month to the date of the most recent study
+                    const dates = response.data.map(study => study.dateTime.split(',')[0].trim())
+                    setSelectedMonth(dates[0])
+                }
+
+                setError(null)
+            } catch (err) {
+                setError('Falha ao carregar estudos')
+                console.error(err)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchStudies()
+    }, [])
 
     const handleTabChange = (tabId: string) => {
         setActiveTab(tabId)
@@ -26,10 +96,11 @@ export default function DashboardPage() {
         { id: 'estudos-compartilhados', label: 'Estudos compartilhados comigo' }
     ]
 
-    const monthOptions = [
-        { value: 'março de 2026', label: 'março de 2026' },
-        { value: 'abril de 2026', label: 'abril de 2026' },
-    ]
+    // Generate month options from studies
+    const monthOptions = studies.length > 0
+        ? [...new Set(studies.map(study => study.dateTime.split(',')[0].trim()))]
+            .map(date => ({ value: date, label: date }))
+        : [{ value: 'Nenhuma data disponível', label: 'Nenhuma data disponível' }]
 
     return (
         <div className="min-h-screen flex flex-col">
@@ -48,7 +119,7 @@ export default function DashboardPage() {
 
                 {/* Next scan info */}
                 <div className="bg-gray-50 rounded-lg p-6 mb-8">
-                    <p className="text-gray-700 mb-6">Sua próxima varredura recomendá é em maio de 2026</p>
+                    <p className="text-gray-700 mb-6">Sua próxima varredura recomendá é em {studies.length > 0 ? studies[0].dateTime.split(',')[0].trim() : 'breve'}</p>
 
                     <GradientSelect
                         label="Data da digitalização"
@@ -62,12 +133,16 @@ export default function DashboardPage() {
                 {/* Content based on active tab */}
                 <div>
                     {activeTab === 'meus-estudos' ? (
-                        hasStudies ? (
+                        loading ? (
+                            <LoadingSpinner />
+                        ) : error ? (
+                            <p className="text-red-500">{error}</p>
+                        ) : studies.length > 0 ? (
                             <div className="mb-8 rounded-xl p-[1px] bg-gradient-to-r from-green-200 via-amber-200 to-green-200">
                                 <div className="bg-white rounded-xl p-6">
                                     <div className="mb-6">
                                         <h2 className="text-xl text-gray-700">
-                                            Augusto Romão - Varredura completa de corpo inteiro <span className="text-green-500 font-normal">/ Concluída</span>
+                                            {studies[0].clientName} - Varredura completa de corpo inteiro <span className="text-green-500 font-normal">/ {studies[0].status === 'COMPLETED' ? 'Concluída' : 'Pendente'}</span>
                                         </h2>
                                     </div>
                                     <BodySystemView />

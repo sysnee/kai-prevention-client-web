@@ -94,6 +94,12 @@ const systems: Record<SystemType, SystemInfo> = {
     }
 }
 
+export const LoadingSpinner = () => (
+    <div className="flex justify-center py-4">
+        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-amber-500"></div>
+    </div>
+)
+
 export default function FindingsPage() {
     const [expandedSystems, setExpandedSystems] = useState<string[]>(['nervoso'])
     const [expandedOrgans, setExpandedOrgans] = useState<string[]>([])
@@ -193,13 +199,6 @@ export default function FindingsPage() {
             ? '1 pequena descoberta'
             : `${count} pequenas descobertas`
     }
-
-    // Loading spinner component
-    const LoadingSpinner = () => (
-        <div className="flex justify-center py-4">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-amber-500"></div>
-        </div>
-    )
 
     return (
         <div className="min-h-screen flex">

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import sistemaNervosoIcon from '../assets/icons/sistema-nervoso-icon.svg'
 import sistemaRespiratorioIcon from '../assets/icons/sistema-respiratorio-icon.svg'
 import sistemaCirculatorioIcon from '../assets/icons/sistema-circulatorio-icon.svg'
@@ -83,6 +84,7 @@ const systems: Record<SystemType, SystemInfo> = {
 
 export default function BodySystemView() {
     const [activeSystem, setActiveSystem] = useState<SystemType>('nervoso')
+    const router = useRouter()
 
     const getFindingsText = (count: number) => {
         if (count === 0) return 'Nenhum resultado adverso'
@@ -95,6 +97,10 @@ export default function BodySystemView() {
     const leftSystems: SystemType[] = ['nervoso', 'respiratorio', 'circulatorio', 'endocrino'];
     const rightSystems: SystemType[] = ['urinario', 'reprodutivo', 'digestivo', 'musculoesqueletico'];
 
+    const handleSystemClick = (systemKey: SystemType) => {
+        router.push('/findings')
+    }
+
     const renderSystemButton = (systemKey: SystemType) => {
         const system = systems[systemKey];
         const isActive = activeSystem === systemKey;
@@ -104,6 +110,7 @@ export default function BodySystemView() {
                 key={systemKey}
                 className={`flex items-center gap-3 cursor-pointer mb-4 transition-colors duration-200 ${isActive ? 'opacity-80' : 'opacity-100'}`}
                 onMouseEnter={() => setActiveSystem(systemKey)}
+                onClick={() => handleSystemClick(systemKey)}
             >
                 <Image
                     src={system.icon}
