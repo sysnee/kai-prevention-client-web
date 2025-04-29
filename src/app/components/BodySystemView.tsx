@@ -30,59 +30,59 @@ interface SystemInfo {
     findings: number
 }
 
+const systems: Record<SystemType, SystemInfo> = {
+    nervoso: {
+        name: 'Sistema Nervoso',
+        icon: sistemaNervosoIcon,
+        imagePath: sistemaNervosoImg,
+        findings: 4
+    },
+    respiratorio: {
+        name: 'Sistema Respiratório',
+        icon: sistemaRespiratorioIcon,
+        imagePath: sistemaRespiratorioImg,
+        findings: 1
+    },
+    circulatorio: {
+        name: 'Sistema Circulatório',
+        icon: sistemaCirculatorioIcon,
+        imagePath: sistemaCirculatorioImg,
+        findings: 1
+    },
+    endocrino: {
+        name: 'Sistema Endócrino',
+        icon: sistemaEndocrinoIcon,
+        imagePath: sistemaEndocrinoImg,
+        findings: 0
+    },
+    urinario: {
+        name: 'Sistema Urinário',
+        icon: sistemaUrinarioIcon,
+        imagePath: sistemaUrinarioImg,
+        findings: 1
+    },
+    reprodutivo: {
+        name: 'Sistema Reprodutivo',
+        icon: sistemaReprodutivoIcon,
+        imagePath: sistemaReprodutivoImg,
+        findings: 1
+    },
+    digestivo: {
+        name: 'Sistema Digestivo',
+        icon: sistemaDigestivoIcon,
+        imagePath: sistemaDigestivoImg,
+        findings: 0
+    },
+    musculoesqueletico: {
+        name: 'Sistema Musculoesquelético',
+        icon: sistemaMusculoesqueleticoIcon,
+        imagePath: sistemaMusculoesqueleticoImg,
+        findings: 0
+    }
+}
+
 export default function BodySystemView() {
     const [activeSystem, setActiveSystem] = useState<SystemType>('nervoso')
-
-    const systems: Record<SystemType, SystemInfo> = {
-        nervoso: {
-            name: 'Sistema Nervoso',
-            icon: sistemaNervosoIcon,
-            imagePath: sistemaNervosoImg,
-            findings: 4
-        },
-        respiratorio: {
-            name: 'Sistema Respiratório',
-            icon: sistemaRespiratorioIcon,
-            imagePath: sistemaRespiratorioImg,
-            findings: 1
-        },
-        circulatorio: {
-            name: 'Sistema Circulatório',
-            icon: sistemaCirculatorioIcon,
-            imagePath: sistemaCirculatorioImg,
-            findings: 1
-        },
-        endocrino: {
-            name: 'Sistema Endócrino',
-            icon: sistemaEndocrinoIcon,
-            imagePath: sistemaEndocrinoImg,
-            findings: 0
-        },
-        urinario: {
-            name: 'Sistema Urinário',
-            icon: sistemaUrinarioIcon,
-            imagePath: sistemaUrinarioImg,
-            findings: 1
-        },
-        reprodutivo: {
-            name: 'Sistema Reprodutivo',
-            icon: sistemaReprodutivoIcon,
-            imagePath: sistemaReprodutivoImg,
-            findings: 1
-        },
-        digestivo: {
-            name: 'Sistema Digestivo',
-            icon: sistemaDigestivoIcon,
-            imagePath: sistemaDigestivoImg,
-            findings: 0
-        },
-        musculoesqueletico: {
-            name: 'Sistema Musculoesquelético',
-            icon: sistemaMusculoesqueleticoIcon,
-            imagePath: sistemaMusculoesqueleticoImg,
-            findings: 0
-        }
-    }
 
     const getFindingsText = (count: number) => {
         if (count === 0) return 'Nenhum resultado adverso'
@@ -102,14 +102,14 @@ export default function BodySystemView() {
         return (
             <div
                 key={systemKey}
-                className={`flex items-center gap-3 cursor-pointer mb-4 transition-colors duration-200 ${isActive ? 'opacity-100' : 'opacity-70'}`}
+                className={`flex items-center gap-3 cursor-pointer mb-4 transition-colors duration-200 ${isActive ? 'opacity-80' : 'opacity-100'}`}
                 onMouseEnter={() => setActiveSystem(systemKey)}
             >
                 <Image
                     src={system.icon}
                     alt={system.name}
-                    width={36}
-                    height={36}
+                    width={44}
+                    height={44}
                 />
                 <div>
                     <p className="text-gray-700 text-sm">{system.name}</p>
@@ -123,7 +123,7 @@ export default function BodySystemView() {
 
     return (
         <div className="flex flex-col md:flex-row gap-8 bg-white rounded-xl shadow-sm p-8">
-            <div className="md:w-1/2 flex flex-col">
+            <div className="md:w-3/2 flex flex-col md:relative md:after:absolute md:after:right-0 md:after:top-0 md:after:bottom-0 md:after:w-[1px] md:after:bg-gradient-to-b md:after:from-green-200 md:after:via-amber-200 md:after:to-green-200 md:pr-8">
                 <div className="mb-8">
                     <h2 className="text-gray-700 text-xl mb-2">Resultados</h2>
                     <p className="text-gray-600 text-sm">
@@ -157,7 +157,7 @@ export default function BodySystemView() {
                 </div>
             </div>
 
-            <div className="md:w-1/2 flex flex-col">
+            <div className="md:w-1/2 flex flex-col md:pl-8">
                 <h2 className="text-xl text-gray-700 mb-4 text-center">IMAGENS MÉDICAS E RELATÓRIO</h2>
 
                 <div className="relative h-80 mb-8">

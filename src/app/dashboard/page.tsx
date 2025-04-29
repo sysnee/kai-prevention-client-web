@@ -34,7 +34,7 @@ export default function DashboardPage() {
     return (
         <div className="min-h-screen flex flex-col">
             {/* Main content */}
-            <main className="flex-1 p-6 max-w-7xl mx-auto w-full">
+            <main className="flex-1 p-6 mx-auto w-full" style={{ maxWidth: '1580px' }}>
                 {/* Page title */}
                 <h1 className="text-2xl text-gray-700 font-normal mb-6">VARREDURAS</h1>
 
@@ -63,13 +63,15 @@ export default function DashboardPage() {
                 <div>
                     {activeTab === 'meus-estudos' ? (
                         hasStudies ? (
-                            <div className="mb-8">
-                                <div className="mb-6">
-                                    <h2 className="text-xl text-gray-700">
-                                        Augusto Romão - Varredura completa de corpo inteiro <span className="text-green-500 font-normal">/ Concluída</span>
-                                    </h2>
+                            <div className="mb-8 rounded-xl p-[1px] bg-gradient-to-r from-green-200 via-amber-200 to-green-200">
+                                <div className="bg-white rounded-xl p-6">
+                                    <div className="mb-6">
+                                        <h2 className="text-xl text-gray-700">
+                                            Augusto Romão - Varredura completa de corpo inteiro <span className="text-green-500 font-normal">/ Concluída</span>
+                                        </h2>
+                                    </div>
+                                    <BodySystemView />
                                 </div>
-                                <BodySystemView />
                             </div>
                         ) : (
                             <p className="text-gray-500 italic">Nenhum estudo encontrado</p>

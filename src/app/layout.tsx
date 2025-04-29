@@ -21,7 +21,7 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: 'RIS | KAI Prevention Center',
+  title: 'KAI Prevention Center',
   description: 'Kai Prevention Center',
 };
 
