@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, Suspense } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import api from '@/lib/api'
 import CollapsibleItem from '../components/CollapsibleItem'
@@ -122,7 +122,7 @@ const systemsMapping: Record<SystemType, Omit<SystemInfo, 'findingsCount'>> = {
     }
 }
 
-export default function FindingsPage() {
+function FindingsContent() {
     const router = useRouter()
     const pathname = usePathname()
     const searchParams = useSearchParams()
@@ -587,5 +587,13 @@ export default function FindingsPage() {
                 </div>
             </div>
         </div>
+    )
+}
+
+export default function FindingsPage() {
+    return (
+        <Suspense fallback={<LoadingSpinner />}>
+            <FindingsContent />
+        </Suspense>
     )
 }
