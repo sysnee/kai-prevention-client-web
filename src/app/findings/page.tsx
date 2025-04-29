@@ -18,6 +18,7 @@ import sistemaReprodutivoIcon from '../assets/icons/sistema-reprodutivo-icon.svg
 import sistemaDigestivoIcon from '../assets/icons/sistema-digestivo-icon.svg'
 import sistemaMusculoesqueleticoIcon from '../assets/icons/sistema-musculoesqueletico-icon.svg'
 import { LoadingSpinner } from '../components/LoadingSpinner'
+import Header from '../components/Header'
 
 // Types
 type SystemType = 'nervoso' | 'respiratorio' | 'circulatorio' | 'endocrino' | 'urinario' | 'reprodutivo' | 'digestivo' | 'musculoesqueletico'
@@ -436,157 +437,160 @@ function FindingsContent() {
     }
 
     return (
-        <div className="min-h-screen flex max-w-[1840px] mx-auto">
-            {/* Sidebar */}
-            <div className="w-[360px] border-r border-gray-200 overflow-y-auto p-4">
-                <h1 className="text-xl text-gray-700 font-normal mb-6">SUAS DESCOBERTAS</h1>
-                <div className="relative mb-8">
-                    <select
-                        className="w-full border border-gray-300 rounded-md py-2 px-3 appearance-none bg-gradient-to-r from-green-200 via-amber-200 to-green-200 bg-[length:100%_1px] bg-bottom bg-no-repeat"
-                        defaultValue="14 de maio de 2024 (Verificação mais recente)"
-                    >
-                        <option>22 de abril de 2025 (Verificação mais recente)</option>
-                    </select>
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
+        <>
+            <Header />
+            <div className="min-h-screen flex max-w-[1840px] mx-auto">
+                {/* Sidebar */}
+                <div className="w-[360px] border-r border-gray-200 overflow-y-auto p-4">
+                    <h1 className="text-xl text-gray-700 font-normal mb-6">SUAS DESCOBERTAS</h1>
+                    <div className="relative mb-8">
+                        <select
+                            className="w-full border border-gray-300 rounded-md py-2 px-3 appearance-none bg-gradient-to-r from-green-200 via-amber-200 to-green-200 bg-[length:100%_1px] bg-bottom bg-no-repeat"
+                            defaultValue="14 de maio de 2024 (Verificação mais recente)"
+                        >
+                            <option>22 de abril de 2025 (Verificação mais recente)</option>
+                        </select>
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div className="space-y-1">
+                        {loadingSystems ? (
+                            <LoadingSpinner />
+                        ) : (
+                            Object.keys(systems).map((systemKey) => {
+                                const system = systems[systemKey as SystemType]
+                                const isSystemOpen = expandedSystems.includes(systemKey)
+
+                                return (
+                                    <CollapsibleItem
+                                        key={systemKey}
+                                        title={system.name}
+                                        subtitle={{
+                                            text: getFindingsText(system.findingsCount),
+                                            color: system.findingsCount > 0
+                                                ? getSeverityTextColor(systemSummaryData[systemKey]?.severity || 'none')
+                                                : 'text-xs text-green-500'
+                                        }}
+                                        isOpen={isSystemOpen}
+                                        onToggle={() => handleSystemToggle(systemKey)}
+                                        icon={system.icon}
+                                    >
+                                        {loadingOrgans ? (
+                                            <LoadingSpinner />
+                                        ) : (
+                                            system.name === selectedSystem && organs.map((organ) => {
+                                                const isOrganOpen = expandedOrgans.includes(organ.key)
+                                                const organFindingsCount = getOrganFindingsCount(organ.label)
+
+                                                return (
+                                                    <CollapsibleItem
+                                                        key={organ.key}
+                                                        title={organ.label}
+                                                        subtitle={
+                                                            organFindingsCount > 0
+                                                                ? {
+                                                                    text: getFindingsText(organFindingsCount),
+                                                                    color: getSeverityTextColor(organFindings[selectedSystem]?.find(o => o.organ === organ.label)?.severity || 'none')
+                                                                }
+                                                                : {
+                                                                    text: 'Nenhum resultado adverso',
+                                                                    color: 'text-xs text-green-500'
+                                                                }
+                                                        }
+                                                        isOpen={isOrganOpen}
+                                                        onToggle={() => handleOrganToggle(organ.key, organ.label)}
+                                                        level={1}
+                                                    >
+                                                        {loadingPathologies[organ.key] ? (
+                                                            <LoadingSpinner />
+                                                        ) : (
+                                                            pathologies[organ.key]?.map((pathology) => {
+                                                                const isPathologyOpen = expandedPathologies.includes(pathology.key)
+                                                                const pathologyFindingsCount = getPathologyFindingsCount(organ.label, pathology.label)
+
+                                                                return (
+                                                                    <CollapsibleItem
+                                                                        key={pathology.key}
+                                                                        title={pathology.label}
+                                                                        subtitle={
+                                                                            pathologyFindingsCount > 0
+                                                                                ? {
+                                                                                    text: `${pathologyFindingsCount} ${pathologyFindingsCount === 1 ? 'achado menor' : 'achados menores'}`,
+                                                                                    color: getSeverityTextColor(pathologyFindings[`${selectedSystem}-${organ.label}`]?.find(p => p.pathology === pathology.label)?.severity || 'none')
+                                                                                }
+                                                                                : {
+                                                                                    text: 'Nenhum resultado adverso',
+                                                                                    color: 'text-xs text-green-500'
+                                                                                }
+                                                                        }
+                                                                        isOpen={isPathologyOpen}
+                                                                        onToggle={() => handlePathologyToggle(pathology.key, pathology.label, organ.label)}
+                                                                        level={2}
+                                                                    >
+                                                                        {findings[pathology.key]?.map((finding) => (
+                                                                            <div
+                                                                                key={`finding-${finding.id}`}
+                                                                                className="py-2 pl-4"
+                                                                            >
+                                                                                <p className={`text-sm ${getSeverityTextColor(finding.severity)}`}>
+                                                                                    {finding.pathology}
+                                                                                </p>
+                                                                            </div>
+                                                                        ))}
+                                                                    </CollapsibleItem>
+                                                                )
+                                                            })
+                                                        )}
+                                                    </CollapsibleItem>
+                                                )
+                                            })
+                                        )}
+                                    </CollapsibleItem>
+                                )
+                            })
+                        )}
                     </div>
                 </div>
 
-                <div className="space-y-1">
-                    {loadingSystems ? (
-                        <LoadingSpinner />
-                    ) : (
-                        Object.keys(systems).map((systemKey) => {
-                            const system = systems[systemKey as SystemType]
-                            const isSystemOpen = expandedSystems.includes(systemKey)
+                {/* Content area */}
+                <div className="flex-1 p-6">
+                    <div className="flex-1 max-w-2xl">
+                        {/* Breadcrumb */}
+                        {selectedSystem && (
+                            <div className="mb-4 text-sm text-gray-600">
+                                <span>{selectedSystem}</span>
+                                {organParam && (
+                                    <>
+                                        <span className="mx-2">→</span>
+                                        <span>{organParam}</span>
+                                    </>
+                                )}
+                            </div>
+                        )}
 
-                            return (
-                                <CollapsibleItem
-                                    key={systemKey}
-                                    title={system.name}
-                                    subtitle={{
-                                        text: getFindingsText(system.findingsCount),
-                                        color: system.findingsCount > 0
-                                            ? getSeverityTextColor(systemSummaryData[systemKey]?.severity || 'none')
-                                            : 'text-xs text-green-500'
-                                    }}
-                                    isOpen={isSystemOpen}
-                                    onToggle={() => handleSystemToggle(systemKey)}
-                                    icon={system.icon}
-                                >
-                                    {loadingOrgans ? (
-                                        <LoadingSpinner />
-                                    ) : (
-                                        system.name === selectedSystem && organs.map((organ) => {
-                                            const isOrganOpen = expandedOrgans.includes(organ.key)
-                                            const organFindingsCount = getOrganFindingsCount(organ.label)
-
-                                            return (
-                                                <CollapsibleItem
-                                                    key={organ.key}
-                                                    title={organ.label}
-                                                    subtitle={
-                                                        organFindingsCount > 0
-                                                            ? {
-                                                                text: getFindingsText(organFindingsCount),
-                                                                color: getSeverityTextColor(organFindings[selectedSystem]?.find(o => o.organ === organ.label)?.severity || 'none')
-                                                            }
-                                                            : {
-                                                                text: 'Nenhum resultado adverso',
-                                                                color: 'text-xs text-green-500'
-                                                            }
-                                                    }
-                                                    isOpen={isOrganOpen}
-                                                    onToggle={() => handleOrganToggle(organ.key, organ.label)}
-                                                    level={1}
-                                                >
-                                                    {loadingPathologies[organ.key] ? (
-                                                        <LoadingSpinner />
-                                                    ) : (
-                                                        pathologies[organ.key]?.map((pathology) => {
-                                                            const isPathologyOpen = expandedPathologies.includes(pathology.key)
-                                                            const pathologyFindingsCount = getPathologyFindingsCount(organ.label, pathology.label)
-
-                                                            return (
-                                                                <CollapsibleItem
-                                                                    key={pathology.key}
-                                                                    title={pathology.label}
-                                                                    subtitle={
-                                                                        pathologyFindingsCount > 0
-                                                                            ? {
-                                                                                text: `${pathologyFindingsCount} ${pathologyFindingsCount === 1 ? 'achado menor' : 'achados menores'}`,
-                                                                                color: getSeverityTextColor(pathologyFindings[`${selectedSystem}-${organ.label}`]?.find(p => p.pathology === pathology.label)?.severity || 'none')
-                                                                            }
-                                                                            : {
-                                                                                text: 'Nenhum resultado adverso',
-                                                                                color: 'text-xs text-green-500'
-                                                                            }
-                                                                    }
-                                                                    isOpen={isPathologyOpen}
-                                                                    onToggle={() => handlePathologyToggle(pathology.key, pathology.label, organ.label)}
-                                                                    level={2}
-                                                                >
-                                                                    {findings[pathology.key]?.map((finding) => (
-                                                                        <div
-                                                                            key={`finding-${finding.id}`}
-                                                                            className="py-2 pl-4"
-                                                                        >
-                                                                            <p className={`text-sm ${getSeverityTextColor(finding.severity)}`}>
-                                                                                {finding.pathology}
-                                                                            </p>
-                                                                        </div>
-                                                                    ))}
-                                                                </CollapsibleItem>
-                                                            )
-                                                        })
-                                                    )}
-                                                </CollapsibleItem>
-                                            )
-                                        })
-                                    )}
-                                </CollapsibleItem>
-                            )
-                        })
-                    )}
+                        {loadingFindings ? (
+                            <div className="flex justify-center items-center h-60">
+                                <LoadingSpinner />
+                            </div>
+                        ) : currentFindings.length > 0 ? (
+                            <div>
+                                {currentFindings.map(finding => (
+                                    <FindingCard key={finding.id} finding={finding} />
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="bg-gray-50 rounded-xl p-6 text-center text-gray-600">
+                                Selecione um achado para ver os detalhes
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
-
-            {/* Content area */}
-            <div className="flex-1 p-6">
-                <div className="flex-1 max-w-2xl">
-                    {/* Breadcrumb */}
-                    {selectedSystem && (
-                        <div className="mb-4 text-sm text-gray-600">
-                            <span>{selectedSystem}</span>
-                            {organParam && (
-                                <>
-                                    <span className="mx-2">→</span>
-                                    <span>{organParam}</span>
-                                </>
-                            )}
-                        </div>
-                    )}
-
-                    {loadingFindings ? (
-                        <div className="flex justify-center items-center h-60">
-                            <LoadingSpinner />
-                        </div>
-                    ) : currentFindings.length > 0 ? (
-                        <div>
-                            {currentFindings.map(finding => (
-                                <FindingCard key={finding.id} finding={finding} />
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="bg-gray-50 rounded-xl p-6 text-center text-gray-600">
-                            Selecione um achado para ver os detalhes
-                        </div>
-                    )}
-                </div>
-            </div>
-        </div>
+        </>
     )
 }
 
