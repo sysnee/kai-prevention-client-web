@@ -1,3 +1,36 @@
+# KAI Prevention Web Client
+
+## Login Page Implementation
+
+The login page has been implemented according to the design mockup. The page features:
+
+- Split screen layout with background image and login form
+- Custom styling using Tailwind CSS and custom CSS
+- Form validation using Zod
+- Integration with NextAuth.js for authentication
+- Responsive design for all device sizes
+
+## Getting Started
+
+1. Add your own image to `public/login-background.jpg` - the current file is just a placeholder
+2. Configure authentication providers in `src/app/auth/providers`
+3. Customize text content and translations as needed
+
+## Dependencies
+
+- Next.js
+- NextAuth.js
+- Material UI
+- Tailwind CSS
+- Zod form validation
+
+## Notes
+
+- The login page is responsive and will adjust to different screen sizes
+- The form includes validation for email and password
+- Password visibility can be toggled
+- The page is set up to redirect to the dashboard after successful login
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started

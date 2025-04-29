@@ -1,0 +1,190 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+I have a prototype made with wordpress of a login page, and I would like you clone that:
+
+image.png
+
+code:
+"""
+<body class="page-template page-template-page-template page-template-login page-template-page-templatelogin-php page page-id-122">
+
+    <header id="header" class="header desktop">
+        <div class="header__menu">
+            <ul class="header__social">
+                <li><a class="header__icon-instagram"></a></li>
+                <li><a class="header__icon-facebook"></a></li>
+                <li><a class="header__icon-linkedin"></a></li>
+            </ul>
+            <nav class="header__navbar">
+                <ul class="header__navbar-nav">
+                    <li>
+<form method="get" id="searchform" class="header__searchform" action=".//">
+  <a href="#" onclick="document.getElementById('searchform').submit();" class="search-buttom mobile">Pesquisar</a>
+  <input type="text" class="header__searchform-text-input" value="" name="s" id="search" placeholder="Digite o que você procura">
+  <input type="hidden" name="post_type" value="produtos">
+</form>
+
+<i class="ti-search color-primary"></i>
+</li>
+                    <li><a href="./../agendamento/index.html" class="header__link">Agendar experiência KAI</a></li>
+                    <li>(00) 0000-0000 / (00) 0000-0000</li>
+                    <li><a href="./../login/index.html" class="header__login notranslate">Login</a></li>
+                    <li class="gtranslate"><div class="gtranslate_wrapper" id="gt-wrapper-25320205"></div></li>
+                </ul>
+            </nav>
+        </div>
+        <a href="./../index.html" class="header__logo"></a>
+
+        <button class="header__icon-menu uk-button uk-button-default" type="button" uk-toggle="target: #offcanvas-nav"></button>
+
+        <div id="offcanvas-nav" uk-offcanvas="overlay: false">
+            <div class="uk-offcanvas-bar">
+            <button class="uk-offcanvas-close header__icon-close-menu" type="button"></button>
+                <ul class="uk-nav uk-nav-default">
+                    <li class=""><a href="./../kai/index.html">KAI</a></li>
+                    <li class=""><a href="./../experiencia-kai/index.html">EXPERIÊNCIA KAI</a></li>
+                    <li class=""><a href="./../hi-servicos/index.html">HI - SERVIÇOS</a></li>
+                    <li class=""><a href="./../longevidade/index.html">LONGEVIDADE</a></li>
+                    <li class=""><a href="./../para-empresas/index.html">PARA EMPRESAS</a></li>
+                    <li class=""><a href="./../parceria-medica/index.html">PARCERIA MÉDICA</a></li>
+                    <li class=""><a href="./../contato/index.html">CONTATO</a></li>
+                    <li class=""><a href="./../duvidas-frequentes/index.html">DÚVIDAS FREQUENTES</a></li>
+                </ul>
+            </div>
+        </div>
+    </header>
+
+
+    <header id="header" class="header-mobile mobile">
+        <div class="wrapper-top">
+            <a href="./../index.html" class="logo mobile"><img></a>
+            <div class="wrapper mobile">
+                <button class="search search-button mobile" uk-icon="icon: search"></button>
+                <a href="./../minha-conta/index.html" class="minha-conta" uk-icon="icon: user; ratio: 1"></a>
+                <a href="#?" onclick="public_woo_amc_show();" class="header-cart icon-orcamentos mobile" uk-icon="icon: cart"><span class="cart-count"></span></a>
+                <button class="" uk-icon="icon: menu; ratio: 2" uk-toggle="target: #offcanvas-nav"></button>
+            </div>
+        </div>
+        <div id="offcanvas-nav" uk-offcanvas="overlay: true">
+            <div class="uk-offcanvas-bar">
+                <ul class="uk-nav uk-nav-default uk-nav-parent-icon" uk-nav>
+                <li class=""><a href="./../kai/index.html">KAI</a></li>
+                    <li class=""><a href="./../experiencia-kai/index.html">EXPERIÊNCIA KAI</a></li>
+                    <li class=""><a href="./../hi-servicos/index.html">HI - SERVIÇOS</a></li>
+                    <li class=""><a href="./../longevidade/index.html">LONGEVIDADE</a></li>
+                    <li class=""><a href="./../para-empresas/index.html">PARA EMPRESAS</a></li>
+                    <li class=""><a href="./../parceria-medica/index.html">PARCERIA MÉDICA</a></li>
+                    <li class=""><a href="./../contato/index.html">CONTATO</a></li>
+                    <li class=""><a href="./../duvidas-frequentes/index.html">DÚVIDAS FREQUENTES</a></li>
+                </ul>
+                <ul class="social mobile">
+                    <li><a href="https://www.instagram.com/" class="instagram" target="_blank"></a></li>
+                </ul>
+            </div>
+        </div>
+        <form method="get" id="searchform" class="header__searchform" action=".//">
+  <a href="#" onclick="document.getElementById('searchform').submit();" class="search-buttom mobile">Pesquisar</a>
+  <input type="text" class="header__searchform-text-input" value="" name="s" id="search" placeholder="Digite o que você procura">
+  <input type="hidden" name="post_type" value="produtos">
+</form>
+
+<i class="ti-search color-primary"></i>    </header>
+    <script>$(document).ready(function() {
+            if ($(window).width() < 768) {
+                $('.header-desk').detach();
+                $('.search-button').on('click', function() {
+                    $('.searchform').toggleClass('hidden');
+                });
+            }
+            if ($(window).width() > 768) {
+                $('.header-mobile').detach();
+                $('.search-button').on('click', function() {
+                    $('.searchform').removeClass('hidden');
+                });
+                $('.uk-close').on('click', function() {
+                    $('.searchform').addClass('hidden');
+                });
+            }
+            document.title = "Login";
+        });</script><div class="login">
+    <div class="cover">
+        <img src="./../wp-content/themes/kai_prevention/images/login-1.jpg" alt="">
+    </div>
+    <div class="login__wrapper">
+        <div class="form-login__box-img">
+            <img src="./../wp-content/themes/kai_prevention/images/footer-logo.svg" alt="">
+        </div>
+        <div class="login__form">
+            <h2>Entre na sua conta</h2>
+            <form action="">
+                <div class="input-group">
+                    <input type="email" placeholder="E-mail" required>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="password" placeholder="Senha" required>
+                    <button type="button" class="toggle-password" onclick="togglePassword()"></button>
+                </div>
+                <!-- <button type="submit" class="login__submit">Entrar</button> -->
+                <button type="button" class="login__submit" onclick="window.location.href='.//dashboard'">Entrar</button>
+            </form>
+            <p class="login__reset-pwd">Esqueceu sua senha? <strong><a href="#"> Redefinir senha</a></strong></p>
+        </div>
+    </div>
+</div>
+
+<script>function togglePassword() {
+        var passwordField = document.getElementById("password");
+        if (passwordField.type === "password") {
+            passwordField.type = "text";
+        } else {
+            passwordField.type = "password";
+        }
+    }</script>
+<!-- FOOTER -->
+<footer class="footer">
+    <div class="footer__container">
+        <a href="./../index.html" class="footer__logo"></a>
+
+        <div class="footer__wrapper">
+                                        <div class="footer__contato">
+                    <p>r. teodoro sampaio 399 conj. 41<br>
+Pinheiros &#8211; São Paulo &#8211; sp<br>
+cep: 05405-000</p>
+                    <span>-</span>
+                    <p>(00) 0000-0000 | (00) 0000-0000<br>
+contato@kai.com.br</p>
+                </div>
+            
+            <div class="footer__nav">
+                <ul class="uk-nav uk-nav-default">
+                    <li class=""><a href="./../kai/index.html">KAI</a></li>
+                    <li class=""><a href="./../experiencia-kai/index.html">EXPERIÊNCIA KAI</a></li>
+                    <li class=""><a href="./../hi-servicos/index.html">HI - SERVIÇOS</a></li>
+                    <li class=""><a href="./../longevidade/index.html">LONGEVIDADE</a></li>
+                    <li class=""><a href="./../para-empresas/index.html">PARA EMPRESAS</a></li>
+                </ul>
+                <ul class="uk-nav uk-nav-default">
+                    <li class=""><a href="./../parceria-medica/index.html">PARCERIA MÉDICA</a></li>
+                    <li class=""><a href="./../contato/index.html">CONTATO</a></li>
+                    <li class=""><a href="./../duvidas-frequentes/index.html">DÚVIDAS FREQUENTES</a></li>
+                    <li class=""><a href="./../politica-de-privacidade/index.html">Política de privacidade</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer__login-social">
+            <a href="./../login/index.html" class="footer__login">Login</a>
+            <ul class="footer__social">
+                <li><a class="footer__icon-instagram"></a></li>
+                <li><a class="footer__icon-facebook"></a></li>
+                <li><a class="footer__icon-linkedin"></a></li>
+            </ul>
+        </div>
+    </div>
+    <p class="footer__copytight">© Copyright 2025 - Kai Prevention Center. Todos os direitos reservados. O conteúdo deste site não pode ser reproduzido, distribuído, transmitido, ou usado, exceto com a permissão prévia por escrito. Site by Miss Lily.</p>
+</footer>
+
+"""

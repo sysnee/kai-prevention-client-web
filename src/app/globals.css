@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --kai-gradient-start: rgba(169, 220, 147, 1);
+  --kai-gradient-end: rgba(255, 128, 70, 1);
+  --kai-gradient: linear-gradient(90deg, var(--kai-gradient-start) 30%, var(--kai-gradient-end) 80%);
+  --kai-green: #A9DC93;
+  --kai-orange: #FF8046;
+}
+
 @layer base {
   body {
     @apply bg-kai-background text-kai-text-primary;
@@ -95,6 +103,54 @@
 
   .input-field {
     @apply w-full px-3 py-2 bg-pure-white border border-kai-border rounded-md focus:ring-2 focus:ring-kai-primary/20 focus:border-kai-primary transition-colors;
+  }
+
+  /* Gradient KAI elements */
+  .kai-gradient-button {
+    background: var(--kai-gradient);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 12px 24px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .kai-gradient-button:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .kai-gradient-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .kai-gradient-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .kai-gradient-input {
+    width: 100%;
+    padding: 12px 20px;
+    font-size: 16px;
+    background-color: white;
+    border-radius: 50px;
+    border: 1px solid transparent;
+    background-image: linear-gradient(white, white), var(--kai-gradient);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    transition: all 0.3s ease;
+    outline: none;
+  }
+
+  .kai-gradient-input:focus {
+    box-shadow: 0 0 0 2px rgba(255, 128, 70, 0.1);
   }
 
   .sidebar-link {
