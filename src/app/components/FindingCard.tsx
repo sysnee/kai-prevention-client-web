@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { getSeverityText, severityColors } from '../constants'
 import { Severity } from '../constants'
 import { formatDateTime } from '../utils/formatters'
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 
 interface Finding {
     id: string
@@ -32,6 +33,32 @@ interface FindingCardProps {
 
 export default function FindingCard({ finding }: FindingCardProps) {
     const [expanded, setExpanded] = useState(false)
+    const router = useRouter()
+    const pathname = usePathname()
+    const searchParams = useSearchParams()
+
+    const toggleExpand = useCallback(() => {
+        setExpanded(!expanded)
+
+        // When expanding, update URL to select this pathology
+        if (!expanded) {
+            const urlParams = new URLSearchParams(searchParams.toString())
+
+            // Keep existing reportId
+            const reportId = urlParams.get('reportId')
+            if (reportId) {
+                urlParams.set('reportId', reportId)
+            }
+
+            // Set system, organ, and pathology from the finding
+            urlParams.set('system', finding.system)
+            urlParams.set('organ', finding.organ)
+            urlParams.set('pathology', finding.pathology)
+
+            const newUrl = `${pathname}?${urlParams.toString()}`
+            router.push(newUrl, { scroll: false })
+        }
+    }, [expanded, finding, pathname, router, searchParams])
 
     return (
         <div className="relative mb-6 rounded-2xl p-[1px] overflow-hidden bg-gradient-to-r from-green-200 via-amber-200 to-amber-400">
@@ -56,7 +83,7 @@ export default function FindingCard({ finding }: FindingCardProps) {
                 <div className="mt-4 flex justify-center">
                     <button
                         className="text-[#5B5B5F] text-sm font-semibold hover:underline focus:outline-none font-[Poppins-SemiBold sans-serif]"
-                        onClick={() => setExpanded(!expanded)}
+                        onClick={toggleExpand}
                     >
                         {expanded ? '-Clique para ocultar' : '+Clique para expandir'}
                     </button>

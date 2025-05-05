@@ -7,6 +7,7 @@ import CollapsibleItem from '../components/CollapsibleItem'
 import FindingCard from '../components/FindingCard'
 import { debounce } from 'lodash'
 import { severityColors } from '../constants'
+import PathologyInfo from '../components/PathologyInfo'
 
 // Import system icons
 import sistemaNervosoIcon from '../assets/icons/sistema-nervoso-icon.svg'
@@ -150,6 +151,8 @@ function FindingsContent() {
     const [loadingSystems, setLoadingSystems] = useState<boolean>(true)
     const [organFindings, setOrganFindings] = useState<Record<string, OrganFindingSummary[]>>({})
     const [pathologyFindings, setPathologyFindings] = useState<Record<string, PathologyFindingSummary[]>>({})
+    const [selectedPathology, setSelectedPathology] = useState<string>('')
+    const [selectedOrgan, setSelectedOrgan] = useState<string>('')
 
     // Debounced URL update function to prevent multiple rapid updates
     const updateUrl = useCallback(
@@ -248,18 +251,23 @@ function FindingsContent() {
                 if (pathologyParam) params.pathology = pathologyParam
 
                 const result = await api.get('/findings', { params })
-                if (result && result.data) {
+                if (result && result.data && result.data.length > 0) {
+                    setSelectedPathology(result.data[0].pathology)
+                    setSelectedOrgan(result.data[0].organ)
                     setCurrentFindings(result.data)
+                } else {
+                    setCurrentFindings([])
                 }
             } catch (error) {
                 console.error('Error fetching findings:', error)
+                setCurrentFindings([])
             } finally {
                 setLoadingFindings(false)
             }
         }
 
         fetchFindings()
-    }, [reportId, systemParam, organParam])
+    }, [reportId, systemParam, organParam, pathologyParam])
 
     // Load organs when system changes
     useEffect(() => {
@@ -313,6 +321,11 @@ function FindingsContent() {
             if (system) {
                 setSelectedSystem(system.name)
 
+                // Reset selected pathology and organ when changing systems
+                // The fetchFindings effect will set them when data is loaded
+                setSelectedPathology('')
+                setSelectedOrgan('')
+
                 // Update URL with new system and clear organ/pathology
                 updateUrl({
                     system: system.name,
@@ -332,6 +345,13 @@ function FindingsContent() {
                 ? prev.filter(key => key !== organKey)
                 : [...prev, organKey]
         })
+
+        // Set or clear selected organ
+        if (isClosing) {
+            setSelectedOrgan('')
+        } else {
+            setSelectedOrgan(organLabel)
+        }
 
         // Update URL
         updateUrl({
@@ -355,6 +375,46 @@ function FindingsContent() {
                         ...prev,
                         [`${selectedSystem}-${organLabel}`]: pathologySummary || []
                     }))
+
+                    // Auto-select first pathology with findings
+                    if (pathologySummary && pathologySummary.length > 0) {
+                        // Find the first pathology with findings
+                        const pathologyWithFindings = pathologySummary.find(p => p.findingsCount > 0)
+                        if (pathologyWithFindings) {
+                            // Find the corresponding pathology in the result
+                            const pathology = result?.find((p: Pathology) => p.label === pathologyWithFindings.pathology)
+                            if (pathology) {
+                                setExpandedPathologies([pathology.key])
+
+                                // Fetch findings for this specific pathology to update the UI
+                                try {
+                                    const findingsResult = await api.get('/findings', {
+                                        params: {
+                                            reportId,
+                                            system: selectedSystem,
+                                            organ: organLabel,
+                                            pathology: pathology.label
+                                        }
+                                    })
+
+                                    if (findingsResult && findingsResult.data && findingsResult.data.length > 0) {
+                                        setCurrentFindings(findingsResult.data)
+                                        setSelectedPathology(findingsResult.data[0].pathology)
+                                        setSelectedOrgan(findingsResult.data[0].organ)
+                                    }
+                                } catch (error) {
+                                    console.error('Error fetching findings for pathology:', error)
+                                }
+
+                                // Update URL with pathology
+                                updateUrl({
+                                    system: selectedSystem,
+                                    organ: organLabel,
+                                    pathology: pathology.label
+                                })
+                            }
+                        }
+                    }
                 } catch (err) {
                     console.error('Error fetching pathology findings summary:', err)
                 }
@@ -382,6 +442,12 @@ function FindingsContent() {
                 ? prev.filter(key => key !== pathologyKey)
                 : [...prev, pathologyKey]
         })
+
+        // Always store the organ when selecting a pathology
+        if (!isClosing) {
+            setSelectedOrgan(organLabel)
+            setSelectedPathology(pathologyLabel)
+        }
 
         // Update URL
         updateUrl({
@@ -420,13 +486,6 @@ function FindingsContent() {
         return pathologySummary?.findingsCount || 0
     }
 
-    // Helper function to get the proper color based on severity
-    const getSeverityColor = (severity: string = 'none'): string => {
-        return severity in severityColors
-            ? `text-xs`
-            : `text-xs text-green-500`;
-    }
-
     const getSeverityTextColor = (severity: string = 'none'): string => {
         if (severity === 'none') return 'text-blue-500';
         if (severity === 'low') return 'text-yellow-500';
@@ -436,12 +495,13 @@ function FindingsContent() {
         return 'text-green-500';
     }
 
+
     return (
         <>
             <Header />
             <div className="min-h-screen flex max-w-[1840px] mx-auto">
-                {/* Sidebar */}
-                <div className="w-[360px] border-r border-gray-200 overflow-y-auto p-4">
+                {/* Sidebar - First column */}
+                <div className="w-[320px] border-r border-gray-200 overflow-y-auto p-4">
                     <h1 className="text-xl text-gray-700 font-normal mb-6">SUAS DESCOBERTAS</h1>
                     <div className="relative mb-8">
                         <select
@@ -556,9 +616,9 @@ function FindingsContent() {
                     </div>
                 </div>
 
-                {/* Content area */}
-                <div className="flex-1 p-6">
-                    <div className="flex-1 max-w-2xl">
+                {/* Content area - Second column */}
+                <div className="w-[500px] border-r border-gray-200 p-6 overflow-y-auto">
+                    <div className="max-w-full">
                         {/* Breadcrumb */}
                         {selectedSystem && (
                             <div className="mb-4 text-sm text-gray-600">
@@ -587,6 +647,17 @@ function FindingsContent() {
                                 Selecione um achado para ver os detalhes
                             </div>
                         )}
+                    </div>
+                </div>
+
+                {/* Information area - Third column */}
+                <div className="flex-1 p-6 overflow-y-auto">
+                    <div className="max-w-full">
+                        <h2 className="text-xl text-gray-700 font-normal mb-6">{selectedPathology || 'INFORMAÇÕES DA PATOLOGIA'}</h2>
+                        <PathologyInfo
+                            organ={selectedOrgan || organParam}
+                            pathology={selectedPathology}
+                        />
                     </div>
                 </div>
             </div>
