@@ -501,7 +501,7 @@ function FindingsContent() {
             <Header />
             <div className="min-h-screen flex max-w-[1840px] mx-auto">
                 {/* Sidebar - First column */}
-                <div className="w-[320px] border-r border-gray-200 overflow-y-auto p-4">
+                <div className="w-[320px] flex-shrink-0 border-r border-gray-200 overflow-y-auto p-4">
                     <h1 className="text-xl text-gray-700 font-normal mb-6">SUAS DESCOBERTAS</h1>
                     <div className="relative mb-8">
                         <select
@@ -616,8 +616,8 @@ function FindingsContent() {
                     </div>
                 </div>
 
-                {/* Content area - Second column */}
-                <div className="w-[500px] border-r border-gray-200 p-6 overflow-y-auto">
+                {/* Content area - Second column (dynamic width) */}
+                <div className="flex-grow min-w-[400px] border-r border-gray-200 p-6 overflow-y-auto">
                     <div className="max-w-full">
                         {/* Breadcrumb */}
                         {selectedSystem && (
@@ -651,7 +651,7 @@ function FindingsContent() {
                 </div>
 
                 {/* Information area - Third column */}
-                <div className="flex-1 p-6 overflow-y-auto">
+                <div className="w-[380px] flex-shrink-0 p-6 overflow-y-auto">
                     <div className="max-w-full">
                         <h2 className="text-xl text-gray-700 font-normal mb-6">{selectedPathology || 'INFORMAÇÕES DA PATOLOGIA'}</h2>
                         <PathologyInfo
