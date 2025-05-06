@@ -8,7 +8,7 @@ import BodySystemView from '../components/BodySystemView'
 import api from '@/lib/api'
 import { LoadingSpinner } from '../components/LoadingSpinner'
 import Header from '../components/Header'
-
+import Footer from '../components/Footer'
 interface Exam {
     id: string;
     modality: string;
@@ -156,6 +156,7 @@ export default function DashboardPage() {
                     </div>
                 </main>
             </div>
+            <Footer />
         </>
     )
 } 
