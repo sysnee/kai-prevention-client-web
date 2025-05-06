@@ -20,6 +20,7 @@ import sistemaDigestivoIcon from '../assets/icons/sistema-digestivo-icon.svg'
 import sistemaMusculoesqueleticoIcon from '../assets/icons/sistema-musculoesqueletico-icon.svg'
 import { LoadingSpinner } from '../components/LoadingSpinner'
 import Header from '../components/Header'
+import Footer from '../components/Footer'
 
 // Types
 type SystemType = 'nervoso' | 'respiratorio' | 'circulatorio' | 'endocrino' | 'urinario' | 'reprodutivo' | 'digestivo' | 'musculoesqueletico'
@@ -501,7 +502,7 @@ function FindingsContent() {
             <Header />
             <div className="min-h-screen flex max-w-[1840px] mx-auto">
                 {/* Sidebar - First column */}
-                <div className="w-[320px] flex-shrink-0 border-r border-gray-200 overflow-y-auto p-4">
+                <div className="w-[320px] flex-shrink-0 border-r border-gray-200 overflow-y-auto p-4 pb-12">
                     <h1 className="text-xl text-gray-700 font-normal mb-6">SUAS DESCOBERTAS</h1>
                     <div className="relative mb-8">
                         <select
@@ -661,6 +662,7 @@ function FindingsContent() {
                     </div>
                 </div>
             </div>
+            <Footer />
         </>
     )
 }
