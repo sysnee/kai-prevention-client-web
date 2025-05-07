@@ -287,11 +287,11 @@ export default function BodySystemView({ reportId, studyId }: { reportId: string
                     </button>
                 </div>
 
-                <button className="border-[1px] bg-gradient-to-r p-[1px] from-green-200 via-amber-200 to-green-200 rounded-full mb-8">
-                    <span className="block bg-white rounded-full py-2 px-4 text-sm text-gray-600">
+                <a href={`/medical-report/${studyId}`} className="border-[1px] bg-gradient-to-r p-[1px] from-green-200 via-amber-200 to-green-200 rounded-full mb-8">
+                    <span className="block bg-white rounded-full py-2 px-4 text-center text-sm text-gray-600">
                         Ver todas as imagens
                     </span>
-                </button>
+                </a>
 
                 <div className="mt-4">
                     <h3 className="text-gray-700 mb-2">Relatório</h3>
