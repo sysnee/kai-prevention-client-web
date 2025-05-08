@@ -261,12 +261,9 @@ export default function BodySystemView({ reportId, studyId }: { reportId: string
                 <h2 className="text-xl text-gray-700 mb-4 text-center">IMAGENS MÉDICAS E RELATÓRIO</h2>
 
                 <div className="relative h-80 mb-8">
-                    <Image
-                        src={scanImage}
-                        alt="Imagem médica"
-                        fill
-                        style={{ objectFit: 'contain' }}
-                    />
+                    <div className="w-full h-full bg-gray-200 rounded-lg flex items-center justify-center">
+                        <p className="text-gray-500 text-sm">Nenhuma imagem disponível</p>
+                    </div>
 
                     <button
                         className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2"
@@ -289,7 +286,7 @@ export default function BodySystemView({ reportId, studyId }: { reportId: string
 
                 <a href={`/medical-report/${studyId}`} className="border-[1px] bg-gradient-to-r p-[1px] from-green-200 via-amber-200 to-green-200 rounded-full mb-8">
                     <span className="block bg-white rounded-full py-2 px-4 text-center text-sm text-gray-600">
-                        Ver todas as imagens
+                        Ver estudo completo
                     </span>
                 </a>
 
@@ -301,16 +298,16 @@ export default function BodySystemView({ reportId, studyId }: { reportId: string
 
                     <div className="flex flex-col space-y-3">
                         <a
-                            href="#"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                window.open(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/v1'}/findings/service-request/${studyId}/report`, '_blank');
-                            }}
+                            href={`/medical-report/${studyId}`}
+                            // onClick={(e) => {
+                            //     e.preventDefault();
+                            //     window.open(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/v1'}/findings/service-request/${studyId}/report`, '_blank');
+                            // }}
                             className="text-blue-500 hover:underline text-sm"
                         >
                             Ver Relatório Médico Oficial
                         </a>
-                        <a href="#" className="text-blue-500 hover:underline text-sm">Baixar imagens como DICOM</a>
+                        <a href="#" className="text-gray-500 hover:underline text-sm disabled">Baixar imagens como DICOM</a>
                     </div>
                 </div>
 
