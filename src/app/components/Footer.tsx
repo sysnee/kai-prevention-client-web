@@ -39,21 +39,21 @@ export default function Footer() {
                         {/* KAI */}
                         <div className="flex flex-row md:gap-16">
                             <ul className="space-y-4 text-sm text-[#7D7D82] flex-1 md:flex-auto">
-                                <li><Link href="/experiencia-kai" className="text-[#7D7D82] hover:underline">KAI</Link></li>
-                                <li><Link href="/experiencia-kai" className="text-[#7D7D82] hover:underline">EXPERIÊNCIA KAI</Link></li>
-                                <li><Link href="/servicos" className="text-[#7D7D82] hover:underline">HI - SERVIÇOS</Link></li>
-                                <li><Link href="/longevidade" className="text-[#7D7D82] hover:underline">LONGEVIDADE</Link></li>
-                                <li><Link href="/empresas" className="text-[#7D7D82] hover:underline">PARA EMPRESAS</Link></li>
+                                <li><Link href="/" className="text-[#7D7D82] hover:underline">KAI</Link></li>
+                                <li><Link href="/" className="text-[#7D7D82] hover:underline">EXPERIÊNCIA KAI</Link></li>
+                                <li><Link href="/" className="text-[#7D7D82] hover:underline">HI - SERVIÇOS</Link></li>
+                                <li><Link href="/" className="text-[#7D7D82] hover:underline">LONGEVIDADE</Link></li>
+                                <li><Link href="/" className="text-[#7D7D82] hover:underline">PARA EMPRESAS</Link></li>
                             </ul>
                         </div>
 
                         {/* Medical Partnership */}
                         <div className="flex flex-row md:gap-16">
                             <ul className="space-y-4 text-sm text-[#7D7D82] flex-1 md:flex-auto">
-                                <li><Link href="/contato" className="text-[#7D7D82] hover:underline">PARCERIA MÉDICA</Link></li>
-                                <li><Link href="/contato" className="text-[#7D7D82] hover:underline">CONTATO</Link></li>
-                                <li><Link href="/duvidas-frequentes" className="text-[#7D7D82] hover:underline">DÚVIDAS FREQUENTES</Link></li>
-                                <li><Link href="/politica-de-privacidade" className="text-[#7D7D82] hover:underline">POLÍTICA DE PRIVACIDADE</Link></li>
+                                <li><Link href="/" className="text-[#7D7D82] hover:underline">PARCERIA MÉDICA</Link></li>
+                                <li><Link href="/" className="text-[#7D7D82] hover:underline">CONTATO</Link></li>
+                                <li><Link href="/" className="text-[#7D7D82] hover:underline">DÚVIDAS FREQUENTES</Link></li>
+                                <li><Link href="/" className="text-[#7D7D82] hover:underline">POLÍTICA DE PRIVACIDADE</Link></li>
                             </ul>
                         </div>
                     </div>
@@ -82,7 +82,7 @@ export default function Footer() {
             </div>
             <div className="bg-gradient-to-r from-[#A9DC93] to-[#FF8046] text-white text-xs py-3 px-6">
                 <div className="container mx-auto text-center">
-                    © Copyright 2025 - Kai Prevention Center. Todos os direitos reservados. O conteúdo deste site não pode ser reproduzido, distribuído, transmitido, ou usado, exceto com a permissão prévia por escrito. Site by Miss Lily.
+                    © Copyright {new Date().getFullYear()} - Kai Prevention Center. Todos os direitos reservados. O conteúdo deste site não pode ser reproduzido, distribuído, transmitido, ou usado, exceto com a permissão prévia por escrito.
                 </div>
             </div>
         </footer>
