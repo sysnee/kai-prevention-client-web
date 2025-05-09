@@ -39,26 +39,7 @@ export default function FindingCard({ finding }: FindingCardProps) {
 
     const toggleExpand = useCallback(() => {
         setExpanded(!expanded)
-
-        // When expanding, update URL to select this pathology
-        if (!expanded) {
-            const urlParams = new URLSearchParams(searchParams.toString())
-
-            // Keep existing reportId
-            const reportId = urlParams.get('reportId')
-            if (reportId) {
-                urlParams.set('reportId', reportId)
-            }
-
-            // Set system, organ, and pathology from the finding
-            urlParams.set('system', finding.system)
-            urlParams.set('organ', finding.organ)
-            urlParams.set('pathology', finding.pathology)
-
-            const newUrl = `${pathname}?${urlParams.toString()}`
-            router.push(newUrl, { scroll: false })
-        }
-    }, [expanded, finding, pathname, router, searchParams])
+    }, [expanded])
 
     return (
         <div className="relative mb-6 rounded-2xl p-[1px] overflow-hidden bg-gradient-to-r from-green-200 via-amber-200 to-amber-400">

@@ -57,7 +57,7 @@ export default function PathologyInfo({ organ, pathology }: PathologyInfoProps) 
     if (!pathology) {
         return (
             <div className="bg-gray-50 rounded-lg p-6 text-center text-gray-500">
-                Selecione um achado para ver informações
+                Selecione uma patologia para ver informações
             </div>
         )
     }

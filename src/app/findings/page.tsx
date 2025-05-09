@@ -21,6 +21,7 @@ import sistemaMusculoesqueleticoIcon from '../assets/icons/sistema-musculoesquel
 import { LoadingSpinner } from '../components/LoadingSpinner'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
+import { CheckCircleIcon } from 'lucide-react'
 
 // Types
 type SystemType = 'nervoso' | 'respiratorio' | 'circulatorio' | 'endocrino' | 'urinario' | 'reprodutivo' | 'digestivo' | 'musculoesqueletico'
@@ -48,6 +49,7 @@ interface SystemInfo {
     name: string
     icon: any
     findingsCount: number
+    description: string
 }
 
 interface Organ {
@@ -90,38 +92,88 @@ interface Finding {
     }
 }
 
+const systemNameToKey = {
+    'Sistema Nervoso': 'nervoso',
+    'Sistema Respiratório': 'respiratorio',
+    'Sistema Circulatório': 'circulatorio',
+    'Sistema Endócrino': 'endocrino',
+    'Sistema Urinário': 'urinario',
+    'Sistema Reprodutivo': 'reprodutivo',
+    'Sistema Digestivo': 'digestivo',
+    'Sistema Musculoesquelético': 'musculoesqueletico',
+}
+
 const systemsMapping: Record<SystemType, Omit<SystemInfo, 'findingsCount'>> = {
     nervoso: {
         name: 'Sistema Nervoso',
         icon: sistemaNervosoIcon,
+        description: `O sistema nervoso humano é como uma rede impressionante que controla absolutamente tudo o que acontece em nosso corpo. Ele funciona como um sistema de comunicação complexo que nos permite sentir o mundo ao nosso redor, pensar, nos mover e realizar todas as funções necessárias para vivermos.
+Esta incrível rede é composta por duas partes principais: o sistema nervoso central, formado pelo cérebro e pela medula espinhal, e o sistema nervoso periférico, constituído pelos nervos que se espalham por todo o corpo. O cérebro atua como um poderoso centro de comando que processa todas as informações, enquanto a medula espinhal funciona como uma via de comunicação essencial entre o cérebro e o resto do corpo.
+Quando você toca algo quente, por exemplo, acontece uma sequência impressionante de eventos: os nervos das suas mãos detectam o calor e enviam rapidamente uma mensagem para a medula espinhal e o cérebro. Seu cérebro interpreta isso como "perigo!" e imediatamente envia uma ordem para os músculos da sua mão, fazendo com que você a afaste antes mesmo de perceber conscientemente o que aconteceu. Todo esse processo acontece em frações de segundo!
+Graças ao sistema nervoso, somos capazes de perceber o mundo através dos cinco sentidos – visão, audição, tato, olfato e paladar. Além disso, ele nos permite realizar movimentos voluntários, como andar ou escrever, e controla funções automáticas essenciais, como respiração, batimentos cardíacos e digestão, que acontecem sem que precisemos pensar nelas. O sistema nervoso também é responsável por nossas capacidades de aprendizagem, memória, emoções e raciocínio.
+Todo esse trabalho é realizado por bilhões de células especiais chamadas neurônios, que se comunicam entre si através de sinais elétricos e químicos. Os neurônios formam uma rede de comunicação incrivelmente complexa que nos permite experimentar o mundo, adaptar-nos a mudanças e realizar todas as atividades necessárias para nossa sobrevivência e bem-estar. É por causa dessa extraordinária rede que você pode ler estas palavras, compreender seu significado e até mesmo refletir sobre como seu próprio sistema nervoso está tornando possível essa experiência.`,
     },
     respiratorio: {
         name: 'Sistema Respiratório',
         icon: sistemaRespiratorioIcon,
+        description: `
+O sistema respiratório humano é uma estrutura vital que permite a captação de oxigênio e a eliminação de dióxido de carbono do nosso organismo. Quando respiramos, o ar entra pelo nariz ou pela boca, onde é filtrado, umidificado e aquecido, antes de seguir pela faringe, laringe e traqueia até chegar aos pulmões. Dentro dos pulmões, a traqueia se ramifica em brônquios e bronquíolos cada vez menores, terminando nos alvéolos, pequenas bolsas onde ocorre a troca gasosa com o sangue.
+O movimento respiratório é controlado principalmente pelo diafragma, um músculo em forma de domo que separa o tórax do abdômen. Quando ele se contrai e desce, o volume da caixa torácica aumenta, criando uma pressão negativa que puxa o ar para dentro dos pulmões (inspiração). Quando relaxa e sobe, o volume diminui e o ar é empurrado para fora (expiração). Este ciclo ocorre aproximadamente 12 a 20 vezes por minuto em um adulto em repouso.
+O sistema respiratório trabalha em perfeita sintonia com o sistema circulatório, formando uma parceria essencial para a vida. Nos alvéolos pulmonares, o oxigênio do ar passa para a corrente sanguínea, enquanto o dióxido de carbono, resíduo do metabolismo celular, move-se do sangue para os pulmões para ser exalado. Esta contínua troca gasosa garante que todas as células do corpo recebam o oxigênio necessário para produzir energia e mantenham suas funções vitais, desde as atividades mais básicas até os esforços físicos mais intensos.`,
     },
     circulatorio: {
         name: 'Sistema Circulatório',
         icon: sistemaCirculatorioIcon,
+        description: `
+
+O sistema circulatório humano é uma rede complexa que transporta nutrientes, oxigênio e hormônios para todas as células do corpo, além de retirar resíduos e eliminar dióxido de carbono. Este sistema é essencial para a manutenção da vida e para o funcionamento de todos os sistemas do corpo.
+
+O sistema circulatório é composto por dois circuitos principais: o circuito pulmonar e o circuito sistêmico. O circuito pulmonar é responsável pela troca gasosa entre o sangue e o ar, enquanto o circuito sistêmico distribui oxigênio e nutrientes a todos os tecidos do corpo.`,
     },
     endocrino: {
         name: 'Sistema Endócrino',
         icon: sistemaEndocrinoIcon,
+        description: `
+
+O sistema endócrino humano é um sistema complexo que produz e secreta hormônios, que são substâncias químicas que controlam e regulam muitas funções do corpo. Este sistema é essencial para o funcionamento de todos os sistemas do corpo e para a manutenção da vida.
+
+O sistema endócrino é composto por glândulas endócrinas, que são pequenas estruturas que produzem e liberam hormônios diretamente no sangue. Esses hormônios então se difundem por todo o corpo, atuando em células distantes e regulando suas funções.`,
     },
     urinario: {
         name: 'Sistema Urinário',
         icon: sistemaUrinarioIcon,
+        description: `
+
+O sistema urinário humano é um sistema essencial para a manutenção da vida e para o funcionamento de todos os sistemas do corpo. Este sistema é responsável por produzir e eliminar a urina, que é uma substância que remove os resíduos do corpo.
+
+O sistema urinário é composto por três principais órgãos: os rins, que são dois órgãos localizados na região posterior do abdômen, e a uretra, que é uma estrutura tubular que transporta a urina desde os rins até o exterior do corpo.`,
     },
     reprodutivo: {
         name: 'Sistema Reprodutivo',
         icon: sistemaReprodutivoIcon,
+        description: `
+
+O sistema reprodutivo humano é um sistema essencial para a manutenção da vida e para o funcionamento de todos os sistemas do corpo. Este sistema é responsável por produzir e eliminar os gametas, que são células sexuais que se combinam para formar um novo indivíduo.
+
+O sistema reprodutivo é composto por três principais órgãos: os testículos, que são dois órgãos localizados na região posterior do abdômen, e a vagina, que é uma estrutura tubular que transporta os gametas desde os testículos até o exterior do corpo.`,
     },
     digestivo: {
         name: 'Sistema Digestivo',
         icon: sistemaDigestivoIcon,
+        description: `
+
+O sistema digestivo humano é um sistema essencial para a manutenção da vida e para o funcionamento de todos os sistemas do corpo. Este sistema é responsável por digerir os alimentos e absorver os nutrientes.
+
+O sistema digestivo é composto por três principais órgãos: o estômago, que é um órgão localizado na região superior do abdômen, e o intestino, que é uma estrutura tubular que transporta os alimentos desde o estômago até o exterior do corpo.`,
     },
     musculoesqueletico: {
         name: 'Sistema Musculoesquelético',
         icon: sistemaMusculoesqueleticoIcon,
+        description: `
+
+O sistema musculoesquelético humano é um sistema essencial para a manutenção da vida e para o funcionamento de todos os sistemas do corpo. Este sistema é responsável por controlar o movimento e a postura do corpo.
+
+O sistema musculoesquelético é composto por três principais órgãos: os músculos, que são células musculares que se contraem para produzir movimento, e os ossos, que são estruturas rígidas que suportam o corpo e permitem a movimentação.`,
     }
 }
 
@@ -644,8 +696,19 @@ function FindingsContent() {
                                 ))}
                             </div>
                         ) : (
-                            <div className="bg-gray-50 rounded-xl p-6 text-center text-gray-600">
-                                Selecione um achado para ver os detalhes
+                            <div className="flex flex-col justify-center items-center">
+                                <div className="flex w-full justify-center items-center bg-gray-50 rounded-xl p-6 text-center text-gray-600">
+                                    <div className="flex justify-center items-center">
+                                        <CheckCircleIcon className="w-6 h-6 text-green-500 mr-4" />
+                                    </div>
+                                    <div className="text-lg font-medium">Nenhum resultado adverso encontrado</div>
+                                </div>
+                                <div className="h-4" />
+                                <div className="h-4" />
+                                <div className="h-4" />
+                                <div className="rounded-xl text-start">
+                                    {systemsMapping[systemNameToKey[systemParam]].description}
+                                </div>
                             </div>
                         )}
                     </div>
